@@ -1,0 +1,2977 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeinZyklus - Tracking App</title>
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --primary-light: #ffb8b8;
+            --primary-dark: #e74c4c;
+            --secondary-color: #ff9e7d;
+            --tertiary-color: #ffcc8e;
+            --fertile-color: #ffc076;
+            --bg-color: #fff5f5;
+            --text-color: #333;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .app-title {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 2.2rem;
+        }
+
+        .app-version {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: bold;
+        }
+
+        .tab:hover {
+            background-color: #f9f9f9;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .cycle-status {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background-color: white;
+            box-shadow: var(--box-shadow);
+        }
+
+        .cycle-wheel {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            position: relative;
+            background-color: #f1f1f1;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cycle-ring {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 30px solid #e0e0e0;
+        }
+
+        .cycle-segment {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            clip: rect(0, 220px, 220px, 110px);
+        }
+
+        .cycle-segment-inner {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            clip: rect(0, 110px, 220px, 0);
+            transform: rotate(var(--rotation));
+            border: 30px solid var(--segment-color);
+        }
+
+        .phase-indicator {
+            width: 150px;
+            height: 150px;
+            background-color: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            z-index: 2;
+        }
+
+        .phase-indicator h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .phase-indicator p {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .countdown {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .prediction-info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            box-shadow: var(--box-shadow);
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background-color: #ff5252;
+        }
+
+        button.secondary {
+            background-color: #6c757d;
+        }
+
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+
+        button.success {
+            background-color: #28a745;
+        }
+
+        button.success:hover {
+            background-color: #218838;
+        }
+
+        /* Daily Quest Grid */
+        .daily-quest {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .quest-header h3 {
+            margin: 0;
+        }
+
+        .quest-date {
+            font-weight: bold;
+        }
+
+        .quest-day {
+            color: #666;
+        }
+
+        .quest-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            padding: 15px 10px;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            background-color: #f8f8f8;
+        }
+
+        .quest-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .quest-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-period {
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .icon-temperature {
+            color: #ff9500;
+            border: 2px solid #ff9500;
+        }
+
+        .icon-mucus {
+            color: #00b4d8;
+            border: 2px solid #00b4d8;
+        }
+
+        .icon-cervix {
+            color: #9d4edd;
+            border: 2px solid #9d4edd;
+        }
+
+        .icon-intercourse {
+            color: #ff66c4;
+            border: 2px solid #ff66c4;
+        }
+
+        .icon-supplements {
+            color: #0ead69;
+            border: 2px solid #0ead69;
+        }
+
+        .icon-meds {
+            color: #ff7b00;
+            border: 2px solid #ff7b00;
+        }
+
+        .icon-mood {
+            color: #4361ee;
+            border: 2px solid #4361ee;
+        }
+
+        .icon-pain {
+            color: #ef476f;
+            border: 2px solid #ef476f;
+        }
+
+        .icon-weight {
+            color: #118ab2;
+            border: 2px solid #118ab2;
+        }
+
+        .icon-notes {
+            color: #073b4c;
+            border: 2px solid #073b4c;
+        }
+
+        .icon-breast {
+            color: #ff758f;
+            border: 2px solid #ff758f;
+        }
+
+        .icon-settings {
+            color: #6c757d;
+            border: 2px solid #6c757d;
+        }
+
+        .icon-add {
+            color: #28a745;
+            border: 2px solid #28a745;
+        }
+
+        .quest-label {
+            font-size: 0.85rem;
+        }
+
+        .form-dialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .dialog-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dialog-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .dialog-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .dialog-close:hover {
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        input[type="date"],
+        textarea,
+        input[type="number"],
+        input[type="time"] {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+
+        .symptom-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .symptom-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .calendar {
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .calendar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .calendar-tools {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-tool {
+            font-size: 1.2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+            box-shadow: none;
+        }
+
+        .calendar-tool:hover {
+            color: var(--primary-color);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            position: relative;
+            cursor: pointer;
+            padding: 5px;
+            min-height: 40px;
+        }
+
+        .calendar-day:hover {
+            background-color: #f1f1f1;
+        }
+
+        .calendar-day.period {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .calendar-day.fertile {
+            background-color: var(--tertiary-color);
+        }
+
+        .calendar-day.ovulation {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: bold;
+            padding: 5px 0;
+        }
+
+        .day-indicator {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .day-symbol {
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+
+        .symptom-indicator {
+            background-color: #6c63ff;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .stat-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .data-management {
+            margin-top: 20px;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            color: green;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .notification-banner {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-banner button {
+            background-color: transparent;
+            color: #856404;
+            border: 1px solid #856404;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            box-shadow: none;
+        }
+
+        .notification-banner button:hover {
+            background-color: #856404;
+            color: white;
+        }
+
+        .backup-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .backup-history {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .backup-item {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .backup-item:last-child {
+            border-bottom: none;
+        }
+
+        .backup-date {
+            font-weight: bold;
+        }
+
+        .backup-item button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .tab-content-section {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 25px;
+        }
+
+        .tab-content-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Chart styles */
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .export-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 0.8em;
+            font-weight: bold;
+            border-radius: 10px;
+            background-color: #e9ecef;
+            color: #495057;
+            margin-left: 5px;
+        }
+
+        .badge-auto {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .badge-manual {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .info-text {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        table th {
+            background-color: #f8f9fa;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .pagination button {
+            padding: 5px 10px;
+        }
+
+        @media (max-width: 600px) {
+            .daily-quest {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .symptom-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .export-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="app-title">MeinZyklus</h1>
+        <div class="app-version">Version 1.3.0</div>
+        <p>Zyklustracking-App mit süßem Design und starken Funktionen</p>
+    </header>
+
+    <div id="notificationBanner" class="notification-banner hidden">
+        <span id="notificationText">Benachrichtigung</span>
+        <button id="notificationClose">Schließen</button>
+    </div>
+
+    <div class="cycle-status">
+        <div class="cycle-wheel" id="cycleWheel">
+            <div class="cycle-ring" id="cycleRing"></div>
+            <div class="phase-indicator" id="phaseIndicator">
+                <h2 id="cycleDay">Tag --</h2>
+                <p id="cyclePhase">--</p>
+                <div class="countdown">
+                    <span id="nextPeriod">--</span> Tage bis zur nächsten Periode
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="heute">Heute</div>
+        <div class="tab" data-tab="kalender">Kalender</div>
+        <div class="tab" data-tab="statistik">Statistik</div>
+        <div class="tab" data-tab="einstellungen">Einstellungen</div>
+    </div>
+
+    <div class="tab-content active" id="heute">
+        <div class="quest-header">
+            <div>
+                <h3>Tägliche Quest</h3>
+                <div>
+                    <span class="quest-date" id="questDate">22. März 2025</span>
+                    <span class="quest-day" id="questDay">Samstag</span>
+                </div>
+            </div>
+            <button id="prevDay">←</button>
+            <button id="nextDay">→</button>
+        </div>
+
+        <div class="daily-quest">
+            <div class="quest-item" data-type="period">
+                <div class="quest-icon icon-period">🩸</div>
+                <div class="quest-label">Menstruation</div>
+            </div>
+            <div class="quest-item" data-type="temperature">
+                <div class="quest-icon icon-temperature">🌡️</div>
+                <div class="quest-label">Temperatur</div>
+            </div>
+            <div class="quest-item" data-type="mucus">
+                <div class="quest-icon icon-mucus">💧</div>
+                <div class="quest-label">Schleim</div>
+            </div>
+            <div class="quest-item" data-type="cervix">
+                <div class="quest-icon icon-cervix">⭕</div>
+                <div class="quest-label">Gebärmutterhals</div>
+            </div>
+            <div class="quest-item" data-type="intercourse">
+                <div class="quest-icon icon-intercourse">💜</div>
+                <div class="quest-label">Geschlechtsv.</div>
+            </div>
+            <div class="quest-item" data-type="supplements">
+                <div class="quest-icon icon-supplements">🌿</div>
+                <div class="quest-label">Nahrungserg.</div>
+            </div>
+            <div class="quest-item" data-type="medication">
+                <div class="quest-icon icon-meds">💊</div>
+                <div class="quest-label">Medikamente</div>
+            </div>
+            <div class="quest-item" data-type="mood">
+                <div class="quest-icon icon-mood">😊</div>
+                <div class="quest-label">Stimmung</div>
+            </div>
+            <div class="quest-item" data-type="pain">
+                <div class="quest-icon icon-pain">🤕</div>
+                <div class="quest-label">Kopfschmerzen</div>
+            </div>
+            <div class="quest-item" data-type="weight">
+                <div class="quest-icon icon-weight">⚖️</div>
+                <div class="quest-label">Gewicht</div>
+            </div>
+            <div class="quest-item" data-type="notes">
+                <div class="quest-icon icon-notes">📝</div>
+                <div class="quest-label">Notizen</div>
+            </div>
+            <div class="quest-item" data-type="breast">
+                <div class="quest-icon icon-breast">👚</div>
+                <div class="quest-label">Brustgefühl</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="kalender">
+        <div class="calendar-header">
+            <div class="calendar-title">
+                <button id="prevMonth">←</button>
+                <h3 id="currentMonth">März 2025</h3>
+                <button id="nextMonth">→</button>
+            </div>
+            <div class="calendar-tools">
+                <button class="calendar-tool" id="calendarSearch">🔍</button>
+                <button class="calendar-tool" id="calendarSettings">⚙️</button>
+            </div>
+        </div>
+        <div class="calendar-day-header">
+            <div class="calendar-grid">
+                <div>Mo</div>
+                <div>Di</div>
+                <div>Mi</div>
+                <div>Do</div>
+                <div>Fr</div>
+                <div>Sa</div>
+                <div>So</div>
+            </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+            <!-- Kalendertage werden per JavaScript eingefügt -->
+        </div>
+
+        <div style="margin-top: 15px;">
+            <h4>Legende:</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--primary-color); margin-right: 5px;">🩸₁</span>
+                    <span>Spotting</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--primary-color); margin-right: 5px;">🩸₂</span>
+                    <span>Leicht</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--primary-color); margin-right: 5px;">🩸₃</span>
+                    <span>Mittel</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--primary-color); margin-right: 5px;">🩸₄</span>
+                    <span>Stark</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--tertiary-color); margin-right: 5px;">🟠</span>
+                    <span>Fruchtbare Tage</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="margin-right: 5px;">🌼</span>
+                    <span>Eisprung</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="margin-right: 5px;">🌙</span>
+                    <span>Mondphase</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: #ff66c4; margin-right: 5px;">💜</span>
+                    <span>Geschlechtsverkehr</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="statistik">
+        <h2>Zyklusstatistik</h2>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-title">Durchschnittliche Zykluslänge</div>
+                <div id="avgCycleLength">-- Tage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Durchschnittliche Periodenlänge</div>
+                <div id="avgPeriodLength">-- Tage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Häufigste Symptome</div>
+                <div id="topSymptoms">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Letzte Zyklen</div>
+                <div id="recentCycles">--</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3 class="section-title">Eintragsübersicht</h3>
+            <table id="entriesTable">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Periode</th>
+                        <th>Temperatur</th>
+                        <th>Symptome</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Tabellendaten werden per JavaScript eingefügt -->
+                </tbody>
+            </table>
+            <div class="pagination" id="entriesPagination">
+                <!-- Paginierung wird per JavaScript eingefügt -->
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="einstellungen">
+        <h2>Einstellungen & Daten</h2>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Automatisches Backup</h3>
+            <div class="switch-container">
+                <label class="switch">
+                    <input type="checkbox" id="autoBackupEnabled" checked>
+                    <span class="slider"></span>
+                </label>
+                <span>Automatisches Backup aktivieren</span>
+            </div>
+
+            <div class="form-group">
+                <label>Backup-Intervall (in Tagen):</label>
+                <input type="number" id="backupInterval" min="1" max="90" value="7">
+            </div>
+
+            <div class="form-group">
+                <label>Maximale Anzahl von Backups:</label>
+                <input type="number" id="maxBackupsCount" min="5" max="100" value="30">
+                <p class="info-text">Höhere Werte ermöglichen mehr Historie, nutzen aber mehr Speicherplatz.</p>
+            </div>
+        </div>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Backup-Historie</h3>
+            <div class="backup-history" id="backupHistory">
+                <!-- Backup-Historie wird per JavaScript eingefügt -->
+                <div class="backup-item">
+                    <span class="backup-date">Keine Backups vorhanden</span>
+                </div>
+            </div>
+            <div class="button-container">
+                <button id="createBackup">Manuelles Backup erstellen</button>
+            </div>
+        </div>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Datenexport</h3>
+            <p>Exportiere deine Daten für externe Sicherung oder Übertragung auf ein anderes Gerät:</p>
+            <div class="export-options">
+                <button id="exportDataJson">Als JSON exportieren</button>
+                <button id="exportDataCsv">Als CSV exportieren</button>
+            </div>
+        </div>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Datenimport</h3>
+            <p>Lade eine zuvor exportierte Datei (JSON oder CSV):</p>
+            <div class="form-group">
+                <input type="file" id="importFile" accept=".json,.csv">
+                <div class="button-container">
+                    <button id="importData">Daten importieren</button>
+                </div>
+                <div id="importMessage" class="hidden"></div>
+            </div>
+            <p class="info-text">
+                <strong>Hinweis:</strong> Browser können aus Sicherheitsgründen nicht direkt auf den "Zykli"-Ordner
+                zugreifen. Bitte navigiere manuell zu diesem Ordner, wenn du die Dateiauswahl öffnest.
+            </p>
+        </div>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Daten zurücksetzen</h3>
+            <p>Vorsicht: Diese Aktion kann nicht rückgängig gemacht werden!</p>
+            <div class="button-container">
+                <button id="resetData">Alle Daten löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Eingabeformular-Dialog -->
+    <div class="form-dialog" id="entryDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title" id="dialogTitle">Eintrag bearbeiten</h3>
+                <button class="dialog-close" id="dialogClose">&times;</button>
+            </div>
+            <form id="dailyEntryForm">
+                <div class="form-group">
+                    <label>Datum:</label>
+                    <input type="date" id="entryDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Periode:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="flow" id="flow-none" value="NONE" checked>
+                            <label for="flow-none">Keine</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="flow" id="flow-spotting" value="SPOTTING">
+                            <label for="flow-spotting">Spotting</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="flow" id="flow-light" value="LIGHT">
+                            <label for="flow-light">Leicht</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="flow" id="flow-medium" value="MEDIUM">
+                            <label for="flow-medium">Mittel</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="flow" id="flow-heavy" value="HEAVY">
+                            <label for="flow-heavy">Stark</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Basaltemperatur (optional):</label>
+                    <input type="number" id="temperature" step="0.1" min="35" max="40" placeholder="z.B. 36.5">
+                </div>
+
+                <div class="form-group">
+                    <label>Zervixschleim:</label>
+                    <select id="cervicalMucus">
+                        <option value="">Nicht eingetragen</option>
+                        <option value="DRY">Trocken</option>
+                        <option value="STICKY">Klebrig</option>
+                        <option value="CREAMY">Cremig</option>
+                        <option value="WATERY">Wässrig</option>
+                        <option value="EGG_WHITE">Spinnbar (Eiweißklar)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Brustgefühl:</label>
+                    <select id="breastFeeling">
+                        <option value="">Nicht eingetragen</option>
+                        <option value="NONE">Keine Beschwerden</option>
+                        <option value="SENSITIVE">Empfindlich</option>
+                        <option value="TENSE">Spannt</option>
+                        <option value="PAINFUL">Schmerzt</option>
+                        <option value="VERY_PAINFUL">Sehr schmerzhaft</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Symptome:</label>
+                    <div class="symptom-grid">
+                        <div class="symptom-option">
+                            <input type="checkbox" id="symptom-headache" name="symptoms" value="HEADACHE">
+                            <label for="symptom-headache">Kopfschmerzen</label>
+                        </div>
+                        <div class="symptom-option">
+                            <input type="checkbox" id="symptom-cramps" name="symptoms" value="CRAMPS">
+                            <label for="symptom-cramps">Krämpfe</label>
+                        </div>
+                        <div class="symptom-option">
+                            <input type="checkbox" id="symptom-backache" name="symptoms" value="BACKACHE">
+                            <label for="symptom-backache">Rückenschmerzen</label>
+                        </div>
+                        <div class="symptom-option">
+                            <input type="checkbox" id="symptom-fatigue" name="symptoms" value="FATIGUE">
+                            <label for="symptom-fatigue">Müdigkeit</label>
+                        </div>
+                        <div class="symptom-option">
+                            <input type="checkbox" id="symptom-bloating" name="symptoms" value="BLOATING">
+                            <label for="symptom-bloating">Blähungen</label>
+                        </div>
+                        <div class="symptom-option">
+                            <input type="checkbox" id="symptom-mood" name="symptoms" value="MOOD">
+                            <label for="symptom-mood">Stimmungsschwankungen</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notizen:</label>
+                    <textarea id="notes" rows="3" placeholder="Notizen zum Tag..."></textarea>
+                </div>
+
+                <div class="button-container">
+                    <button type="submit">Eintrag speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Datenmodell und Speicherung
+        const STORAGE_KEY = 'cycleTackingApp';
+        const BACKUP_STORAGE_KEY = 'cycleTrackingAppBackups';
+        const APP_VERSION = '1.3.0';
+
+        // Initialisiere leeres Datenmodell
+        let appData = {
+            cycles: [],
+            entries: [],
+            settings: {
+                cycleLength: 28, // Standardwert für Zykluslänge
+                periodLength: 5, // Standardwert für Periodenlänge
+                autoBackup: {
+                    enabled: true,
+                    interval: 7, // Backup alle 7 Tage
+                    lastBackup: null,
+                    maxBackups: 30  // Maximal 30 Backups
+                }
+            },
+            version: APP_VERSION
+        };
+
+        // Backup-Historie
+        let backupHistory = [];
+
+        // Aktuelles Datum für die tägliche Quest
+        let currentQuestDate = new Date();
+
+        // Lade gespeicherte Daten
+        function loadData() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    appData = JSON.parse(savedData);
+
+                    // Stelle sicher, dass die Backup-Einstellungen existieren und vollständig sind
+                    if (!appData.settings.autoBackup) {
+                        appData.settings.autoBackup = {
+                            enabled: true,
+                            interval: 7,
+                            lastBackup: null,
+                            maxBackups: 30
+                        };
+                    } else if (!appData.settings.autoBackup.maxBackups) {
+                        appData.settings.autoBackup.maxBackups = 30;
+                    }
+
+                    // Füge Versionsinformation hinzu, falls nicht vorhanden
+                    if (!appData.version) {
+                        appData.version = APP_VERSION;
+                    }
+
+                    // Prüfe, ob ein App-Update stattgefunden hat
+                    if (appData.version !== APP_VERSION) {
+                        // Update-Benachrichtigung
+                        showNotification(`Die App wurde auf Version ${APP_VERSION} aktualisiert.`, 'info');
+                        appData.version = APP_VERSION;
+                        saveData();
+                    }
+                } catch (error) {
+                    console.error('Fehler beim Laden der Daten:', error);
+                    showNotification('Fehler beim Laden der Daten. Die App wurde zurückgesetzt.', 'error');
+                }
+            }
+
+            // Lade Backup-Historie
+            const savedBackups = localStorage.getItem(BACKUP_STORAGE_KEY);
+            if (savedBackups) {
+                try {
+                    backupHistory = JSON.parse(savedBackups);
+                } catch (error) {
+                    console.error('Fehler beim Laden der Backup-Historie:', error);
+                    backupHistory = [];
+                }
+            }
+        }
+
+        // Speichere Daten im localStorage
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+
+            // Prüfe, ob ein automatisches Backup fällig ist
+            checkAutoBackup();
+        }
+
+        // Speichere Backup-Historie
+        function saveBackupHistory() {
+            localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(backupHistory));
+        }
+
+        // Prüfe, ob ein automatisches Backup erstellt werden soll
+        function checkAutoBackup() {
+            if (!appData.settings.autoBackup.enabled) {
+                return;
+            }
+
+            const now = new Date();
+            const lastBackup = appData.settings.autoBackup.lastBackup ? new Date(appData.settings.autoBackup.lastBackup) : null;
+
+            // Wenn noch kein Backup erstellt wurde oder das letzte Backup älter als das Intervall ist
+            if (!lastBackup || (now - lastBackup) >= (appData.settings.autoBackup.interval * 24 * 60 * 60 * 1000)) {
+                createBackup(true);
+            }
+        }
+
+        // Erstelle ein Backup
+        function createBackup(isAuto = false) {
+            const now = new Date();
+            const backupId = `backup_${now.getTime()}`;
+            const backupData = JSON.stringify(appData);
+
+            // Speichere das Backup im localStorage
+            try {
+                localStorage.setItem(backupId, backupData);
+
+                // Aktualisiere das Datum des letzten Backups
+                appData.settings.autoBackup.lastBackup = now.toISOString();
+                saveData();
+
+                // Füge das Backup zur Historie hinzu
+                backupHistory.unshift({
+                    id: backupId,
+                    date: now.toISOString(),
+                    isAuto: isAuto
+                });
+
+                // Begrenze die Anzahl der Backups auf die max. Anzahl
+                const maxBackups = appData.settings.autoBackup.maxBackups || 30;
+                if (backupHistory.length > maxBackups) {
+                    const oldestBackups = backupHistory.splice(maxBackups);
+                    oldestBackups.forEach(backup => {
+                        localStorage.removeItem(backup.id);
+                    });
+                }
+
+                saveBackupHistory();
+                updateBackupHistory();
+
+                if (!isAuto) {
+                    showNotification('Backup erfolgreich erstellt!', 'success');
+                }
+            } catch (error) {
+                console.error('Fehler beim Erstellen des Backups:', error);
+
+                // Prüfe, ob der Fehler auf einen vollen localStorage zurückzuführen ist
+                if (error.name === 'QuotaExceededError' || error.code === 22) {
+                    showNotification('Der Speicherplatz ist voll. Lösche ältere Backups, um Platz zu schaffen.', 'error');
+
+                    // Lösche das älteste Backup, wenn die Historie voll ist
+                    if (backupHistory.length > 0) {
+                        const oldestBackup = backupHistory.pop();
+                        localStorage.removeItem(oldestBackup.id);
+                        saveBackupHistory();
+                        updateBackupHistory();
+
+                        // Versuche es erneut
+                        createBackup(isAuto);
+                    }
+                } else {
+                    showNotification('Fehler beim Erstellen des Backups.', 'error');
+                }
+            }
+        }
+
+        // Backup wiederherstellen
+        function restoreBackup(backupId) {
+            try {
+                const backupData = localStorage.getItem(backupId);
+
+                if (backupData) {
+                    appData = JSON.parse(backupData);
+
+                    // Stelle sicher, dass Backup-Einstellungen vorhanden sind
+                    if (!appData.settings.autoBackup) {
+                        appData.settings.autoBackup = {
+                            enabled: true,
+                            interval: 7,
+                            lastBackup: null,
+                            maxBackups: 30
+                        };
+                    } else if (!appData.settings.autoBackup.maxBackups) {
+                        appData.settings.autoBackup.maxBackups = 30;
+                    }
+
+                    // Aktualisiere die Version
+                    appData.version = APP_VERSION;
+
+                    saveData();
+                    updateUI();
+                    showNotification('Backup erfolgreich wiederhergestellt!', 'success');
+                } else {
+                    showNotification('Backup nicht gefunden.', 'error');
+                }
+            } catch (error) {
+                console.error('Fehler beim Wiederherstellen des Backups:', error);
+                showNotification('Fehler beim Wiederherstellen des Backups.', 'error');
+            }
+        }
+
+        // Backup löschen
+        function deleteBackup(backupId) {
+            try {
+                localStorage.removeItem(backupId);
+
+                // Entferne das Backup aus der Historie
+                backupHistory = backupHistory.filter(backup => backup.id !== backupId);
+                saveBackupHistory();
+                updateBackupHistory();
+
+                showNotification('Backup erfolgreich gelöscht!', 'success');
+            } catch (error) {
+                console.error('Fehler beim Löschen des Backups:', error);
+                showNotification('Fehler beim Löschen des Backups.', 'error');
+            }
+        }
+
+        // Backup-Historie aktualisieren
+        function updateBackupHistory() {
+            const backupHistoryElement = document.getElementById('backupHistory');
+            backupHistoryElement.innerHTML = '';
+
+            if (backupHistory.length === 0) {
+                const emptyItem = document.createElement('div');
+                emptyItem.className = 'backup-item';
+                emptyItem.innerHTML = '<span class="backup-date">Keine Backups vorhanden</span>';
+                backupHistoryElement.appendChild(emptyItem);
+                return;
+            }
+
+            backupHistory.forEach(backup => {
+                const backupDate = new Date(backup.date);
+                const formattedDate = backupDate.toLocaleDateString('de-DE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const backupItem = document.createElement('div');
+                backupItem.className = 'backup-item';
+
+                const badgeClass = backup.isAuto ? 'badge badge-auto' : 'badge badge-manual';
+                const badgeText = backup.isAuto ? 'Auto' : 'Manuell';
+
+                backupItem.innerHTML = `
+                    <span class="backup-date">${formattedDate} <span class="${badgeClass}">${badgeText}</span></span>
+                    <div>
+                        <button class="restore-backup" data-id="${backup.id}">Wiederherstellen</button>
+                        <button class="delete-backup" data-id="${backup.id}">Löschen</button>
+                    </div>
+                `;
+
+                backupHistoryElement.appendChild(backupItem);
+            });
+
+            // Event-Listener für Backup-Aktionen
+            document.querySelectorAll('.restore-backup').forEach(button => {
+                button.addEventListener('click', () => {
+                    const backupId = button.getAttribute('data-id');
+                    if (confirm('Möchtest du dieses Backup wirklich wiederherstellen? Alle aktuellen Daten werden überschrieben.')) {
+                        restoreBackup(backupId);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.delete-backup').forEach(button => {
+                button.addEventListener('click', () => {
+                    const backupId = button.getAttribute('data-id');
+                    if (confirm('Möchtest du dieses Backup wirklich löschen?')) {
+                        deleteBackup(backupId);
+                    }
+                });
+            });
+        }
+
+        // Daten als CSV exportieren
+        function exportDataAsCsv() {
+            // Sortiere Einträge nach Datum (neueste zuerst)
+            const sortedEntries = [...appData.entries].sort((a, b) => {
+                return new Date(b.date).getTime() - new Date(a.date).getTime();
+            });
+
+            // CSV-Header
+            let csvContent = 'Datum,Periode,Temperatur,Zervixschleim,Brustgefühl,Symptome,Notizen\n';
+
+            // Füge Zeilen hinzu
+            sortedEntries.forEach(entry => {
+                // Periodenintensität
+                let flowText = '';
+                switch (entry.flow) {
+                    case 'NONE': flowText = 'Keine'; break;
+                    case 'SPOTTING': flowText = 'Spotting'; break;
+                    case 'LIGHT': flowText = 'Leicht'; break;
+                    case 'MEDIUM': flowText = 'Mittel'; break;
+                    case 'HEAVY': flowText = 'Stark'; break;
+                    default: flowText = '';
+                }
+
+                // Zervixschleim
+                let mucusText = '';
+                switch (entry.cervicalMucus) {
+                    case 'DRY': mucusText = 'Trocken'; break;
+                    case 'STICKY': mucusText = 'Klebrig'; break;
+                    case 'CREAMY': mucusText = 'Cremig'; break;
+                    case 'WATERY': mucusText = 'Wässrig'; break;
+                    case 'EGG_WHITE': mucusText = 'Spinnbar'; break;
+                    default: mucusText = '';
+                }
+
+                // Brustgefühl
+                let breastText = '';
+                switch (entry.breastFeeling) {
+                    case 'NONE': breastText = 'Keine Beschwerden'; break;
+                    case 'SENSITIVE': breastText = 'Empfindlich'; break;
+                    case 'TENSE': breastText = 'Spannt'; break;
+                    case 'PAINFUL': breastText = 'Schmerzt'; break;
+                    case 'VERY_PAINFUL': breastText = 'Sehr schmerzhaft'; break;
+                    default: breastText = '';
+                }
+
+                // Symptome
+                const symptoms = entry.symptoms ? entry.symptoms.map(symptom => getSymptomName(symptom)).join(', ') : '';
+
+                // Notizen (entferne Kommas und Zeilenumbrüche für CSV-Kompatibilität)
+                const notesText = entry.notes ? '"' + entry.notes.replace(/"/g, '""').replace(/\n/g, ' ') + '"' : '';
+
+                // Füge Zeile hinzu
+                csvContent += `${entry.date},${flowText},${entry.temperature || ''},${mucusText},${breastText},${symptoms},${notesText}\n`;
+            });
+
+            // Erstelle Blob und Download-Link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Zykli_export_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showNotification('Daten erfolgreich als CSV exportiert!', 'success');
+        }
+
+        // Zeige eine Benachrichtigung
+        function showNotification(message, type = 'info') {
+            const banner = document.getElementById('notificationBanner');
+            const text = document.getElementById('notificationText');
+
+            text.textContent = message;
+
+            // Setze die Farben je nach Typ
+            if (type === 'error') {
+                banner.style.backgroundColor = '#f8d7da';
+                banner.style.borderColor = '#f5c6cb';
+                banner.style.color = '#721c24';
+            } else if (type === 'success') {
+                banner.style.backgroundColor = '#d4edda';
+                banner.style.borderColor = '#c3e6cb';
+                banner.style.color = '#155724';
+            } else {
+                banner.style.backgroundColor = '#fff3cd';
+                banner.style.borderColor = '#ffeeba';
+                banner.style.color = '#856404';
+            }
+
+            banner.classList.remove('hidden');
+
+            // Automatisch nach 5 Sekunden ausblenden
+            setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Tabs-Funktionalität
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Entferne aktive Klasse von allen Tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Füge aktive Klasse zum geklickten Tab hinzu
+                    tab.classList.add('active');
+
+                    // Verstecke alle Tab-Inhalte
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+
+                    // Zeige den entsprechenden Tab-Inhalt
+                    const tabName = tab.getAttribute('data-tab');
+                    document.getElementById(tabName).classList.add('active');
+
+                    // Aktualisiere spezifische Inhalte für bestimmte Tabs
+                    if (tabName === 'statistik') {
+                        updateEntriesTable();
+                    }
+                });
+            });
+        }
+
+        // Dialog-Funktionalität
+        function setupDialog() {
+            const dialog = document.getElementById('entryDialog');
+            const closeBtn = document.getElementById('dialogClose');
+
+            // Schließen durch Klick auf X
+            closeBtn.addEventListener('click', () => {
+                dialog.style.display = 'none';
+            });
+
+            // Schließen durch Klick außerhalb des Dialogs
+            dialog.addEventListener('click', (event) => {
+                if (event.target === dialog) {
+                    dialog.style.display = 'none';
+                }
+            });
+
+            // Event-Listener für die Formularabgabe
+            document.getElementById('dailyEntryForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                // Sammle Formulardaten
+                const date = document.getElementById('entryDate').value;
+                const flow = document.querySelector('input[name="flow"]:checked').value;
+                const temperature = document.getElementById('temperature').value ? parseFloat(document.getElementById('temperature').value) : null;
+                const cervicalMucus = document.getElementById('cervicalMucus').value || null;
+                const breastFeeling = document.getElementById('breastFeeling').value || null;
+
+                // Sammle ausgewählte Symptome
+                const symptoms = [];
+                document.querySelectorAll('input[name="symptoms"]:checked').forEach(checkbox => {
+                    symptoms.push(checkbox.value);
+                });
+
+                const notes = document.getElementById('notes').value;
+
+                // Erstelle den Eintrag
+                const entry = {
+                    date,
+                    flow,
+                    temperature,
+                    cervicalMucus,
+                    breastFeeling,
+                    symptoms,
+                    notes
+                };
+
+                // Prüfe, ob bereits ein Eintrag für dieses Datum existiert
+                const existingEntryIndex = appData.entries.findIndex(e => e.date === date);
+
+                if (existingEntryIndex !== -1) {
+                    // Aktualisiere den bestehenden Eintrag
+                    appData.entries[existingEntryIndex] = { ...appData.entries[existingEntryIndex], ...entry };
+
+                    // Prüfe, ob ein Periodeneintrag hinzugefügt oder entfernt wurde
+                    if ((appData.entries[existingEntryIndex].flow === 'NONE' && flow !== 'NONE') ||
+                        (appData.entries[existingEntryIndex].flow !== 'NONE' && flow === 'NONE')) {
+                        // Neuberechnung der Zyklen könnte erforderlich sein
+                        recalculateCycles();
+                    }
+
+                    saveData();
+                } else {
+                    // Füge einen neuen Eintrag hinzu
+                    addEntry(entry);
+                }
+
+                showNotification('Eintrag gespeichert!', 'success');
+
+                // Schließe den Dialog
+                dialog.style.display = 'none';
+
+                // UI aktualisieren
+                updateUI();
+            });
+        }
+
+        // Tabellarische Übersicht der Einträge
+        function updateEntriesTable() {
+            const tableBody = document.querySelector('#entriesTable tbody');
+            tableBody.innerHTML = '';
+
+            // Sortiere Einträge nach Datum (neueste zuerst)
+            const sortedEntries = [...appData.entries].sort((a, b) => {
+                return new Date(b.date).getTime() - new Date(a.date).getTime();
+            });
+
+            // Paginierung einrichten
+            const itemsPerPage = 10;
+            const totalPages = Math.ceil(sortedEntries.length / itemsPerPage);
+            let currentPage = 1;
+
+            function displayPage(page) {
+                // Leere die Tabelle
+                tableBody.innerHTML = '';
+
+                // Berechne den Startindex
+                const startIndex = (page - 1) * itemsPerPage;
+                // Berechne den Endindex
+                const endIndex = Math.min(startIndex + itemsPerPage, sortedEntries.length);
+
+                // Zeige Einträge der aktuellen Seite
+                for (let i = startIndex; i < endIndex; i++) {
+                    const entry = sortedEntries[i];
+                    const row = document.createElement('tr');
+
+                    // Formatiere das Datum
+                    const dateObj = new Date(entry.date);
+                    const formattedDate = dateObj.toLocaleDateString('de-DE');
+
+                    // Periodenintensität
+                    let flowText = '';
+                    switch (entry.flow) {
+                        case 'NONE': flowText = 'Keine'; break;
+                        case 'SPOTTING': flowText = 'Spotting'; break;
+                        case 'LIGHT': flowText = 'Leicht'; break;
+                        case 'MEDIUM': flowText = 'Mittel'; break;
+                        case 'HEAVY': flowText = 'Stark'; break;
+                        default: flowText = '';
+                    }
+
+                    // Temperatur
+                    const tempText = entry.temperature ? `${entry.temperature} °C` : '-';
+
+                    // Symptome
+                    const symptoms = entry.symptoms && entry.symptoms.length > 0
+                        ? entry.symptoms.map(symptom => getSymptomName(symptom)).join(', ')
+                        : '-';
+
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>${flowText}</td>
+                        <td>${tempText}</td>
+                        <td>${symptoms}</td>
+                    `;
+
+                    // Füge Klick-Ereignis hinzu, um den Eintrag zu öffnen
+                    row.addEventListener('click', () => {
+                        openEntryForm(entry.date);
+                    });
+                    row.style.cursor = 'pointer';
+
+                    tableBody.appendChild(row);
+                }
+
+                // Aktualisiere die Paginierung
+                updatePagination();
+            }
+
+            function updatePagination() {
+                const paginationElement = document.getElementById('entriesPagination');
+                paginationElement.innerHTML = '';
+
+                if (totalPages <= 1) {
+                    return;
+                }
+
+                // Zurück-Button
+                const prevButton = document.createElement('button');
+                prevButton.textContent = '«';
+                prevButton.disabled = currentPage === 1;
+                prevButton.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        displayPage(currentPage);
+                    }
+                });
+                paginationElement.appendChild(prevButton);
+
+                // Seitenzahlen
+                for (let i = 1; i <= totalPages; i++) {
+                    // Zeige nur 3 Seiten um die aktuelle Seite herum
+                    if (
+                        i === 1 ||
+                        i === totalPages ||
+                        (i >= currentPage - 1 && i <= currentPage + 1)
+                    ) {
+                        const pageButton = document.createElement('button');
+                        pageButton.textContent = i;
+                        pageButton.classList.toggle('active', i === currentPage);
+                        pageButton.addEventListener('click', () => {
+                            currentPage = i;
+                            displayPage(currentPage);
+                        });
+                        paginationElement.appendChild(pageButton);
+                    } else if (
+                        (i === currentPage - 2 && currentPage > 3) ||
+                        (i === currentPage + 2 && currentPage < totalPages - 2)
+                    ) {
+                        // Füge Auslassungspunkte hinzu
+                        const ellipsis = document.createElement('span');
+                        ellipsis.textContent = '...';
+                        ellipsis.style.margin = '0 5px';
+                        paginationElement.appendChild(ellipsis);
+                    }
+                }
+
+                // Weiter-Button
+                const nextButton = document.createElement('button');
+                nextButton.textContent = '»';
+                nextButton.disabled = currentPage === totalPages;
+                nextButton.addEventListener('click', () => {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        displayPage(currentPage);
+                    }
+                });
+                paginationElement.appendChild(nextButton);
+            }
+
+            // Zeige die erste Seite
+            displayPage(currentPage);
+        }
+
+        // Funktion zum Hinzufügen eines neuen Eintrags
+        function addEntry(entry) {
+            // Füge die Eintrag-ID hinzu
+            entry.id = Date.now().toString();
+
+            // Prüfe, ob die Periode beginnt
+            const isNewPeriod = entry.flow !== 'NONE' && !isInPeriod(entry.date);
+
+            // Wenn eine neue Periode beginnt, erstelle einen neuen Zyklus
+            if (isNewPeriod) {
+                const lastCycle = appData.cycles.length > 0 ? appData.cycles[0] : null;
+
+                // Neuer Zyklus
+                const newCycle = {
+                    id: Date.now().toString(),
+                    startDate: entry.date,
+                    endDate: null // Wird später aktualisiert, wenn der nächste Zyklus beginnt
+                };
+
+                // Schließe den letzten Zyklus ab, wenn vorhanden
+                if (lastCycle) {
+                    lastCycle.endDate = new Date(new Date(entry.date).getTime() - 86400000).toISOString().split('T')[0]; // Einen Tag vor dem neuen Zyklusstart
+                }
+
+                // Füge den neuen Zyklus hinzu
+                appData.cycles.unshift(newCycle);
+            }
+
+            // Speichere den Eintrag
+            appData.entries.unshift(entry);
+
+            // Speichere die aktualisierten Daten
+            saveData();
+
+            // UI aktualisieren
+            updateUI();
+        }
+
+        // Prüfe, ob ein Datum in einer Periode liegt
+        function isInPeriod(date) {
+            const dateObj = new Date(date);
+
+            // Prüfe alle Einträge
+            for (const entry of appData.entries) {
+                if (entry.flow !== 'NONE') {
+                    const entryDate = new Date(entry.date);
+
+                    // Wenn das Datum innerhalb von 7 Tagen nach einem Periodeneintrag liegt,
+                    // betrachten wir es als Teil der gleichen Periode
+                    const diffTime = Math.abs(dateObj - entryDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffDays <= 7 && dateObj >= entryDate) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // Berechne den aktuellen Zyklustag und die Phase
+        function calculateCycleStatus() {
+            const today = new Date().toISOString().split('T')[0];
+            let currentCycle = null;
+            let cycleDay = 0;
+            let phase = 'Unbekannt';
+            let daysUntilNextPeriod = 0;
+
+            // Finde den aktuellen Zyklus
+            if (appData.cycles.length > 0) {
+                currentCycle = appData.cycles[0];
+
+                // Berechne Zyklustag
+                const startDate = new Date(currentCycle.startDate);
+                const currentDate = new Date();
+
+                const diffTime = Math.abs(currentDate - startDate);
+                cycleDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                // Bestimme die Phase
+                if (isInPeriod(today)) {
+                    phase = 'Periode';
+                } else if (cycleDay <= 7) {
+                    phase = 'Follikelphase (nach der Periode)';
+                } else if (cycleDay <= 14) {
+                    phase = 'Fruchtbare Phase';
+                    if (cycleDay === 14) {
+                        phase = 'Wahrscheinlicher Eisprung';
+                    }
+                } else {
+                    phase = 'Lutealphase (nach dem Eisprung)';
+                }
+
+                // Berechne Tage bis zur nächsten Periode
+                const avgCycleLength = calculateAvgCycleLength();
+                daysUntilNextPeriod = avgCycleLength - cycleDay + 1;
+
+                if (daysUntilNextPeriod < 0) {
+                    daysUntilNextPeriod = 0;
+                }
+            }
+
+            return {
+                cycleDay,
+                phase,
+                daysUntilNextPeriod
+            };
+        }
+
+        // Berechne durchschnittliche Zykluslänge
+        function calculateAvgCycleLength() {
+            if (appData.cycles.length < 2) {
+                return appData.settings.cycleLength;
+            }
+
+            let totalLength = 0;
+            let completeCycles = 0;
+
+            for (let i = 1; i < appData.cycles.length; i++) {
+                const cycle = appData.cycles[i];
+
+                if (cycle.endDate) {
+                    const startDate = new Date(cycle.startDate);
+                    const endDate = new Date(cycle.endDate);
+
+                    const diffTime = Math.abs(endDate - startDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                    totalLength += diffDays;
+                    completeCycles++;
+                }
+            }
+
+            return completeCycles > 0 ? Math.round(totalLength / completeCycles) : appData.settings.cycleLength;
+        }
+
+        // Berechne durchschnittliche Periodenlänge
+        function calculateAvgPeriodLength() {
+            const periodsByStartDate = {};
+
+            // Gruppiere Periodeneinträge nach Startdatum
+            for (const entry of appData.entries) {
+                if (entry.flow !== 'NONE') {
+                    const date = entry.date;
+                    let found = false;
+
+                    // Prüfe, ob dieser Eintrag zu einer bestehenden Periode gehört
+                    for (const startDate in periodsByStartDate) {
+                        const period = periodsByStartDate[startDate];
+                        const lastDate = period[period.length - 1];
+
+                        const lastDateTime = new Date(lastDate).getTime();
+                        const entryDateTime = new Date(date).getTime();
+
+                        // Wenn der Eintrag innerhalb eines Tages nach dem letzten Periodeneintrag liegt,
+                        // gehört er zur gleichen Periode
+                        if (entryDateTime - lastDateTime <= 86400000) {
+                            period.push(date);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    // Wenn der Eintrag zu keiner bestehenden Periode gehört, starte eine neue
+                    if (!found) {
+                        periodsByStartDate[date] = [date];
+                    }
+                }
+            }
+
+            // Berechne die durchschnittliche Periodenlänge
+            let totalLength = 0;
+            let periodCount = 0;
+
+            for (const startDate in periodsByStartDate) {
+                const period = periodsByStartDate[startDate];
+                totalLength += period.length;
+                periodCount++;
+            }
+
+            return periodCount > 0 ? Math.round(totalLength / periodCount) : appData.settings.periodLength;
+        }
+
+        // Häufigste Symptome ermitteln
+        function getTopSymptoms() {
+            const symptomCount = {};
+            let totalEntries = 0;
+
+            for (const entry of appData.entries) {
+                if (entry.symptoms && entry.symptoms.length > 0) {
+                    totalEntries++;
+
+                    for (const symptom of entry.symptoms) {
+                        if (!symptomCount[symptom]) {
+                            symptomCount[symptom] = 0;
+                        }
+                        symptomCount[symptom]++;
+                    }
+                }
+            }
+
+            // Sortiere Symptome nach Häufigkeit
+            const sortedSymptoms = Object.keys(symptomCount).sort((a, b) => {
+                return symptomCount[b] - symptomCount[a];
+            });
+
+            // Erstelle Ergebnisarray mit Prozentangaben
+            const result = sortedSymptoms.map(symptom => {
+                const percentage = totalEntries > 0 ? Math.round((symptomCount[symptom] / totalEntries) * 100) : 0;
+                return {
+                    name: getSymptomName(symptom),
+                    percentage
+                };
+            });
+
+            return result.slice(0, 3); // Gibt die 3 häufigsten Symptome zurück
+        }
+
+        // Symptom-IDs in lesbare Namen umwandeln
+        function getSymptomName(symptomId) {
+            const symptomNames = {
+                'HEADACHE': 'Kopfschmerzen',
+                'CRAMPS': 'Krämpfe',
+                'BACKACHE': 'Rückenschmerzen',
+                'FATIGUE': 'Müdigkeit',
+                'BLOATING': 'Blähungen',
+                'MOOD': 'Stimmungsschwankungen'
+            };
+
+            return symptomNames[symptomId] || symptomId;
+        }
+
+        // Aktualisiere die UI
+        function updateUI() {
+            updateCycleStatus();
+            updateCalendar();
+            updateStatistics();
+            updateBackupSettings();
+            updateBackupHistory();
+            updateQuestDate();
+        }
+
+        // Aktualisiere den Zyklusstatus
+        function updateCycleStatus() {
+            const status = calculateCycleStatus();
+
+            document.getElementById('cycleDay').textContent = `Tag ${status.cycleDay}`;
+            document.getElementById('cyclePhase').textContent = status.phase;
+            document.getElementById('nextPeriod').textContent = status.daysUntilNextPeriod;
+
+            // Aktualisiere das Zyklusrad mit farbcodierten Segmenten
+            updateCycleWheel(status);
+        }
+
+        // Aktualisiere das Zyklusrad
+        function updateCycleWheel(status) {
+            const cycleRing = document.getElementById('cycleRing');
+            cycleRing.innerHTML = '';
+
+            const avgCycleLength = calculateAvgCycleLength();
+
+            // Bestimme Phasen basierend auf dem Zyklustag
+            let periodEnd = Math.min(appData.settings.periodLength, 7);
+            let fertileStart = 9;
+            let fertileEnd = 16;
+
+            // Setze Hintergrundfarbe entsprechend der Phase
+            let backgroundColor;
+            if (status.phase.includes('Periode')) {
+                backgroundColor = 'var(--primary-color)';
+            } else if (status.phase.includes('Fruchtbare Phase') || status.phase.includes('Eisprung')) {
+                backgroundColor = 'var(--tertiary-color)';
+            } else {
+                backgroundColor = '#e0e0e0';
+            }
+
+            // Vollständiger Kreis in der Hintergrundfarbe
+            cycleRing.style.borderColor = backgroundColor;
+
+            // Erstelle Kreissegmente für die verschiedenen Zyklusphasen
+            // Periodenphase (rot)
+            if (periodEnd > 0) {
+                createCycleSegment(0, (periodEnd / avgCycleLength) * 360, 'var(--primary-color)');
+            }
+
+            // Fruchtbare Phase (orange)
+            createCycleSegment((fertileStart / avgCycleLength) * 360, ((fertileEnd - fertileStart) / avgCycleLength) * 360, 'var(--tertiary-color)');
+
+            // Eisprung-Markierung, falls aktuell
+            if (status.phase.includes('Eisprung')) {
+                const ovulationIndicator = document.createElement('div');
+                ovulationIndicator.textContent = '🌼';
+                ovulationIndicator.style.position = 'absolute';
+                ovulationIndicator.style.top = '50%';
+                ovulationIndicator.style.right = '30px';
+                ovulationIndicator.style.transform = 'translateY(-50%)';
+                ovulationIndicator.style.fontSize = '1.5rem';
+                cycleRing.appendChild(ovulationIndicator);
+            }
+
+            // Aktueller Tag-Marker
+            const dayMarker = document.createElement('div');
+            dayMarker.style.position = 'absolute';
+            dayMarker.style.width = '15px';
+            dayMarker.style.height = '15px';
+            dayMarker.style.borderRadius = '50%';
+            dayMarker.style.backgroundColor = 'white';
+            dayMarker.style.border = '2px solid #4361ee';
+
+            // Berechne Position auf dem Kreis
+            const angle = ((status.cycleDay - 1) / avgCycleLength) * 2 * Math.PI;
+            const radius = 110; // Radius des Kreises (220px / 2)
+            const x = radius * Math.sin(angle);
+            const y = -radius * Math.cos(angle);
+
+            dayMarker.style.top = `${110 + y}px`;
+            dayMarker.style.left = `${110 + x}px`;
+            dayMarker.style.transform = 'translate(-50%, -50%)';
+            dayMarker.style.zIndex = '5';
+
+            cycleRing.appendChild(dayMarker);
+        }
+
+        // Funktion zum Erstellen eines Kreissegments
+        function createCycleSegment(startAngle, sweepAngle, color) {
+            const cycleRing = document.getElementById('cycleRing');
+
+            // Erstelle ein Segment für die angegebene Phase
+            const segment = document.createElement('div');
+            segment.classList.add('cycle-segment');
+
+            // Für den Start-Winkel
+            const segmentInner = document.createElement('div');
+            segmentInner.classList.add('cycle-segment-inner');
+            segmentInner.style.setProperty('--rotation', `${startAngle}deg`);
+            segmentInner.style.setProperty('--segment-color', color);
+
+            segment.appendChild(segmentInner);
+            cycleRing.appendChild(segment);
+
+            // Für den End-Winkel, falls der Sweep-Winkel > 180 Grad ist
+            if (sweepAngle > 180) {
+                const segment2 = document.createElement('div');
+                segment2.classList.add('cycle-segment');
+                segment2.style.transform = 'rotate(180deg)';
+
+                const segmentInner2 = document.createElement('div');
+                segmentInner2.classList.add('cycle-segment-inner');
+                segmentInner2.style.setProperty('--rotation', `${startAngle + 180}deg`);
+                segmentInner2.style.setProperty('--segment-color', color);
+
+                segment2.appendChild(segmentInner2);
+                cycleRing.appendChild(segment2);
+            }
+        }
+
+        // Aktualisiere das Datum für die tägliche Quest
+        function updateQuestDate() {
+            const dateElement = document.getElementById('questDate');
+            const dayElement = document.getElementById('questDay');
+
+            const options = { day: '2-digit', month: 'long', year: 'numeric' };
+            dateElement.textContent = currentQuestDate.toLocaleDateString('de-DE', options);
+            dayElement.textContent = currentQuestDate.toLocaleDateString('de-DE', { weekday: 'long' });
+
+            // Prüfe, ob es für dieses Datum Einträge gibt
+            const dateString = currentQuestDate.toISOString().split('T')[0];
+            const existingEntry = appData.entries.find(entry => entry.date === dateString);
+
+            // Aktualisiere die visuellen Indikatoren in den Quest-Items
+            updateQuestItemIndicators(existingEntry);
+        }
+
+        // Aktualisiere die Indikatoren in den Quest-Items basierend auf den vorhandenen Daten
+        function updateQuestItemIndicators(entry) {
+            // Zurücksetzen aller Indikatoren
+            document.querySelectorAll('.quest-item').forEach(item => {
+                item.style.backgroundColor = '#f8f8f8';
+            });
+
+            if (!entry) return;
+
+            // Periode
+            if (entry.flow !== 'NONE') {
+                document.querySelector('[data-type="period"]').style.backgroundColor = '#ffe6e6';
+            }
+
+            // Temperatur
+            if (entry.temperature) {
+                document.querySelector('[data-type="temperature"]').style.backgroundColor = '#fff2e6';
+            }
+
+            // Schleim
+            if (entry.cervicalMucus) {
+                document.querySelector('[data-type="mucus"]').style.backgroundColor = '#e6f7ff';
+            }
+
+            // Brustgefühl
+            if (entry.breastFeeling) {
+                document.querySelector('[data-type="breast"]').style.backgroundColor = '#ffe6f2';
+            }
+
+            // Symptome
+            if (entry.symptoms && entry.symptoms.length > 0) {
+                if (entry.symptoms.includes('HEADACHE')) {
+                    document.querySelector('[data-type="pain"]').style.backgroundColor = '#ffe6eb';
+                }
+                if (entry.symptoms.includes('MOOD')) {
+                    document.querySelector('[data-type="mood"]').style.backgroundColor = '#e6ecff';
+                }
+            }
+
+            // Notizen
+            if (entry.notes && entry.notes.trim() !== '') {
+                document.querySelector('[data-type="notes"]').style.backgroundColor = '#f2f2f2';
+            }
+        }
+
+        // Kalenderfunktionen
+        function setupCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const currentMonthElement = document.getElementById('currentMonth');
+            const prevMonthButton = document.getElementById('prevMonth');
+            const nextMonthButton = document.getElementById('nextMonth');
+
+            let currentDate = new Date();
+
+            // Funktion zum Rendern des Kalenders
+            function renderCalendar() {
+                calendarGrid.innerHTML = '';
+
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+
+                currentMonthElement.textContent = `${currentDate.toLocaleString('de-DE', { month: 'long' })} ${year}`;
+
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+
+                // Berechne, mit welchem Wochentag der Monat beginnt (0 = Sonntag, 1 = Montag, ...)
+                let firstDayOfGrid = new Date(firstDay);
+                const firstDayWeekday = firstDay.getDay() || 7; // Wenn 0 (Sonntag), dann 7
+                firstDayOfGrid.setDate(firstDayOfGrid.getDate() - (firstDayWeekday - 1));
+
+                // Berechne, an welchem Wochentag der Monat endet
+                const lastDayWeekday = lastDay.getDay() || 7;
+                let lastDayOfGrid = new Date(lastDay);
+                lastDayOfGrid.setDate(lastDayOfGrid.getDate() + (7 - lastDayWeekday));
+
+                // Erstelle Kalendertage
+                let currentGridDay = new Date(firstDayOfGrid);
+
+                while (currentGridDay <= lastDayOfGrid) {
+                    const dayElement = document.createElement('div');
+                    dayElement.classList.add('calendar-day');
+
+                    const dayNumber = currentGridDay.getDate();
+                    dayElement.textContent = dayNumber;
+
+                    // Markiere Tage außerhalb des aktuellen Monats
+                    if (currentGridDay.getMonth() !== month) {
+                        dayElement.style.opacity = '0.5';
+                    }
+
+                    // Markiere Tage mit Einträgen
+                    const dateString = currentGridDay.toISOString().split('T')[0];
+                    const dayEntry = appData.entries.find(entry => entry.date === dateString);
+
+                    if (dayEntry) {
+                        // Markiere Periode
+                        if (dayEntry.flow !== 'NONE') {
+                            dayElement.classList.add('period');
+
+                            // Füge Intensitätsmarkierung hinzu
+                            const intensityMap = {
+                                'SPOTTING': '🩸₁',
+                                'LIGHT': '🩸₂',
+                                'MEDIUM': '🩸₃',
+                                'HEAVY': '🩸₄'
+                            };
+
+                            if (intensityMap[dayEntry.flow]) {
+                                const symbol = document.createElement('div');
+                                symbol.className = 'day-symbol';
+                                symbol.textContent = intensityMap[dayEntry.flow];
+                                dayElement.appendChild(symbol);
+                            }
+                        }
+
+                        // Markiere Geschlechtsverkehr
+                        if (dayEntry.intercourse) {
+                            const symbol = document.createElement('div');
+                            symbol.className = 'day-symbol';
+                            symbol.textContent = '💜';
+                            dayElement.appendChild(symbol);
+                        }
+
+                        // Markiere Symptome
+                        if (dayEntry.symptoms && dayEntry.symptoms.length > 0) {
+                            const indicator = document.createElement('div');
+                            indicator.classList.add('day-indicator', 'symptom-indicator');
+                            dayElement.appendChild(indicator);
+                        }
+                    }
+
+                    // Markiere fruchtbare Tage und Eisprung
+                    const cycles = appData.cycles;
+                    if (cycles.length > 0) {
+                        const currentCycle = cycles[0];
+                        const cycleStart = new Date(currentCycle.startDate);
+
+                        // Berechne Zykluslänge
+                        const avgCycleLength = calculateAvgCycleLength();
+
+                        // Berechne Eisprung (ca. 14 Tage vor der nächsten Periode)
+                        const ovulationDate = new Date(cycleStart);
+                        ovulationDate.setDate(ovulationDate.getDate() + avgCycleLength - 14);
+
+                        // Berechne fruchtbares Fenster (5 Tage vor bis 1 Tag nach Eisprung)
+                        const fertileStart = new Date(ovulationDate);
+                        fertileStart.setDate(fertileStart.getDate() - 5);
+
+                        const fertileEnd = new Date(ovulationDate);
+                        fertileEnd.setDate(fertileEnd.getDate() + 1);
+
+                        // Markiere Eisprung
+                        if (currentGridDay.toDateString() === ovulationDate.toDateString()) {
+                            dayElement.classList.add('ovulation');
+
+                            // Füge Eisprung-Symbol hinzu
+                            const symbol = document.createElement('div');
+                            symbol.className = 'day-symbol';
+                            symbol.textContent = '🌼';
+                            dayElement.appendChild(symbol);
+                        }
+
+                         // Markiere fruchtbare Tage
+                        if (currentGridDay >= fertileStart && currentGridDay <= fertileEnd &&
+                            !dayElement.classList.contains('period') && !dayElement.classList.contains('ovulation')) {
+                            dayElement.classList.add('fertile');
+
+                            // Füge Fruchtbar-Symbol hinzu
+                            const symbol = document.createElement('div');
+                            symbol.className = 'day-symbol';
+                            symbol.textContent = '🟠';
+                            dayElement.appendChild(symbol);
+                        }
+                    }
+
+                    // Füge Mondphase hinzu (vereinfacht dargestellt, alle 7 Tage)
+                    if (dayNumber % 7 === 0) {
+                        const symbol = document.createElement('div');
+                        symbol.className = 'day-symbol';
+                        symbol.textContent = '🌙';
+                        symbol.style.fontSize = '0.6rem';
+                        dayElement.appendChild(symbol);
+                    }
+
+                    // Klick-Ereignis hinzufügen, um das Formular für diesen Tag zu öffnen
+                    dayElement.addEventListener('click', () => {
+                        openEntryForm(dateString);
+                    });
+
+                    calendarGrid.appendChild(dayElement);
+
+                    // Gehe zum nächsten Tag
+                    currentGridDay.setDate(currentGridDay.getDate() + 1);
+                }
+            }
+
+            // Event-Listener für Monatsnavigation
+            prevMonthButton.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+
+            nextMonthButton.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+
+            // Initialer Kalender
+            renderCalendar();
+        }
+
+        // Aktualisiere den Kalender
+        function updateCalendar() {
+            setupCalendar();
+        }
+
+        // Öffne das Eingabeformular für ein bestimmtes Datum
+        function openEntryForm(dateString) {
+            // Setze das Datum im Formular
+            document.getElementById('entryDate').value = dateString;
+
+            // Setze den Dialog-Titel
+            document.getElementById('dialogTitle').textContent = `Eintrag für ${new Date(dateString).toLocaleDateString('de-DE')}`;
+
+            // Zeige den Dialog
+            document.getElementById('entryDialog').style.display = 'flex';
+
+            // Fülle das Formular, falls bereits ein Eintrag existiert
+            const existingEntry = appData.entries.find(entry => entry.date === dateString);
+
+            if (existingEntry) {
+                // Setze Periodenfluss
+                const flowRadio = document.getElementById(`flow-${existingEntry.flow.toLowerCase()}`);
+                if (flowRadio) {
+                    flowRadio.checked = true;
+                }
+
+                // Setze Temperatur
+                if (existingEntry.temperature) {
+                    document.getElementById('temperature').value = existingEntry.temperature;
+                } else {
+                    document.getElementById('temperature').value = '';
+                }
+
+                // Setze Zervixschleim
+                document.getElementById('cervicalMucus').value = existingEntry.cervicalMucus || '';
+
+                // Setze Brustgefühl
+                document.getElementById('breastFeeling').value = existingEntry.breastFeeling || '';
+
+                // Setze Symptome
+                document.querySelectorAll('input[name="symptoms"]').forEach(checkbox => {
+                    checkbox.checked = existingEntry.symptoms && existingEntry.symptoms.includes(checkbox.value);
+                });
+
+                // Setze Notizen
+                document.getElementById('notes').value = existingEntry.notes || '';
+            } else {
+                // Setze Standardwerte, wenn kein Eintrag existiert
+                document.getElementById('flow-none').checked = true;
+                document.getElementById('temperature').value = '';
+                document.getElementById('cervicalMucus').value = '';
+                document.getElementById('breastFeeling').value = '';
+                document.querySelectorAll('input[name="symptoms"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                document.getElementById('notes').value = '';
+            }
+        }
+
+        // Aktualisiere die Statistiken
+        function updateStatistics() {
+            // Durchschnittliche Zykluslänge
+            const avgCycleLength = calculateAvgCycleLength();
+            document.getElementById('avgCycleLength').textContent = `${avgCycleLength} Tage`;
+
+            // Durchschnittliche Periodenlänge
+            const avgPeriodLength = calculateAvgPeriodLength();
+            document.getElementById('avgPeriodLength').textContent = `${avgPeriodLength} Tage`;
+
+            // Häufigste Symptome
+            const topSymptoms = getTopSymptoms();
+            if (topSymptoms.length > 0) {
+                document.getElementById('topSymptoms').innerHTML = topSymptoms.map(symptom =>
+                    `${symptom.name} (${symptom.percentage}%)`
+                ).join('<br>');
+            } else {
+                document.getElementById('topSymptoms').textContent = 'Keine Symptome erfasst';
+            }
+
+            // Letzte Zyklen
+            const recentCycles = appData.cycles.slice(0, 3);
+            if (recentCycles.length > 0) {
+                let html = '';
+
+                for (let i = 0; i < recentCycles.length; i++) {
+                    const cycle = recentCycles[i];
+                    const startDate = new Date(cycle.startDate).toLocaleDateString('de-DE');
+                    let endDate = 'aktuell';
+                    let length = 'läuft noch';
+
+                    if (cycle.endDate) {
+                        endDate = new Date(cycle.endDate).toLocaleDateString('de-DE');
+
+                        const start = new Date(cycle.startDate);
+                        const end = new Date(cycle.endDate);
+                        const diffTime = Math.abs(end - start);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                        length = `${diffDays} Tage`;
+                    }
+
+                    html += `Zyklus ${i + 1}: ${startDate} - ${endDate} (${length})<br>`;
+                }
+
+                document.getElementById('recentCycles').innerHTML = html;
+            } else {
+                document.getElementById('recentCycles').textContent = 'Keine Zyklen erfasst';
+            }
+        }
+
+        // Aktualisiere die Backup-Einstellungen
+        function updateBackupSettings() {
+            document.getElementById('autoBackupEnabled').checked = appData.settings.autoBackup.enabled;
+            document.getElementById('backupInterval').value = appData.settings.autoBackup.interval;
+            document.getElementById('maxBackupsCount').value = appData.settings.autoBackup.maxBackups || 30;
+        }
+
+        // CSV-Parser für den Import
+        function parseCSV(csvText) {
+            // Einfacher CSV-Parser
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',');
+
+            const result = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue; // Überspringe leere Zeilen
+
+                const values = lines[i].split(',');
+                const entry = {};
+
+                for (let j = 0; j < headers.length; j++) {
+                    let value = values[j] || '';
+
+                    // Entferne Anführungszeichen bei Texten
+                    if (value.startsWith('"') && value.endsWith('"')) {
+                        value = value.substring(1, value.length - 1);
+                    }
+
+                    // Konvertiere Werte
+                    switch (headers[j].trim()) {
+                        case 'Datum':
+                            entry.date = value;
+                            break;
+                        case 'Periode':
+                            // Konvertiere deutsche Bezeichnungen in Enum-Werte
+                            switch (value.trim()) {
+                                case 'Keine': entry.flow = 'NONE'; break;
+                                case 'Spotting': entry.flow = 'SPOTTING'; break;
+                                case 'Leicht': entry.flow = 'LIGHT'; break;
+                                case 'Mittel': entry.flow = 'MEDIUM'; break;
+                                case 'Stark': entry.flow = 'HEAVY'; break;
+                                default: entry.flow = 'NONE';
+                            }
+                            break;
+                        case 'Temperatur':
+                            entry.temperature = value ? parseFloat(value) : null;
+                            break;
+                        case 'Zervixschleim':
+                            // Konvertiere deutsche Bezeichnungen in Enum-Werte
+                            switch (value.trim()) {
+                                case 'Trocken': entry.cervicalMucus = 'DRY'; break;
+                                case 'Klebrig': entry.cervicalMucus = 'STICKY'; break;
+                                case 'Cremig': entry.cervicalMucus = 'CREAMY'; break;
+                                case 'Wässrig': entry.cervicalMucus = 'WATERY'; break;
+                                case 'Spinnbar': entry.cervicalMucus = 'EGG_WHITE'; break;
+                                default: entry.cervicalMucus = null;
+                            }
+                            break;
+                        case 'Brustgefühl':
+                            // Konvertiere deutsche Bezeichnungen in Enum-Werte
+                            switch (value.trim()) {
+                                case 'Keine Beschwerden': entry.breastFeeling = 'NONE'; break;
+                                case 'Empfindlich': entry.breastFeeling = 'SENSITIVE'; break;
+                                case 'Spannt': entry.breastFeeling = 'TENSE'; break;
+                                case 'Schmerzt': entry.breastFeeling = 'PAINFUL'; break;
+                                case 'Sehr schmerzhaft': entry.breastFeeling = 'VERY_PAINFUL'; break;
+                                default: entry.breastFeeling = null;
+                            }
+                            break;
+                        case 'Symptome':
+                            // Konvertiere Symptom-Liste in Array
+                            entry.symptoms = value.split(', ').map(symptom => {
+                                // Konvertiere deutsche Bezeichnungen in Enum-Werte
+                                switch (symptom.trim()) {
+                                    case 'Kopfschmerzen': return 'HEADACHE';
+                                    case 'Krämpfe': return 'CRAMPS';
+                                    case 'Rückenschmerzen': return 'BACKACHE';
+                                    case 'Müdigkeit': return 'FATIGUE';
+                                    case 'Blähungen': return 'BLOATING';
+                                    case 'Stimmungsschwankungen': return 'MOOD';
+                                    default: return '';
+                                }
+                            }).filter(symptom => symptom); // Entferne leere Einträge
+                            break;
+                        case 'Notizen':
+                            entry.notes = value;
+                            break;
+                    }
+                }
+
+                // Erstelle eine ID für den Eintrag
+                entry.id = `imported_${i}_${Date.now()}`;
+
+                result.push(entry);
+            }
+
+            return result;
+        }
+
+        // Neuberechnung der Zyklen basierend auf den Periodeneinträgen
+        function recalculateCycles() {
+            // Sortiere Einträge nach Datum
+            const sortedEntries = [...appData.entries].sort((a, b) => {
+                return new Date(a.date).getTime() - new Date(b.date).getTime();
+            });
+
+            // Finde alle Periodeneinträge
+            const periodEntries = sortedEntries.filter(entry => entry.flow !== 'NONE');
+
+            if (periodEntries.length === 0) {
+                return;
+            }
+
+            // Gruppiere Periodeneinträge nach Perioden
+            const periods = [];
+            let currentPeriod = [periodEntries[0]];
+
+            for (let i = 1; i < periodEntries.length; i++) {
+                const prevEntry = periodEntries[i - 1];
+                const currentEntry = periodEntries[i];
+
+                const prevDate = new Date(prevEntry.date);
+                const currentDate = new Date(currentEntry.date);
+
+                const diffTime = Math.abs(currentDate - prevDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays <= 7) {
+                    // Gehört zur gleichen Periode
+                    currentPeriod.push(currentEntry);
+                } else {
+                    // Neue Periode beginnt
+                    periods.push(currentPeriod);
+                    currentPeriod = [currentEntry];
+                }
+            }
+
+            if (currentPeriod.length > 0) {
+                periods.push(currentPeriod);
+            }
+
+            // Erstelle Zyklen basierend auf den Perioden
+            appData.cycles = [];
+
+            for (let i = 0; i < periods.length; i++) {
+                const period = periods[i];
+                const startDate = period[0].date;
+
+                const cycle = {
+                    id: `cycle-${i}`,
+                    startDate,
+                    endDate: null
+                };
+
+                if (i < periods.length - 1) {
+                    const nextPeriodStart = periods[i + 1][0].date;
+                    const endDate = new Date(nextPeriodStart);
+                    endDate.setDate(endDate.getDate() - 1);
+                    cycle.endDate = endDate.toISOString().split('T')[0];
+                }
+
+                appData.cycles.push(cycle);
+            }
+
+            // Sortiere Zyklen nach Startdatum (neueste zuerst)
+            appData.cycles.sort((a, b) => {
+                return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+            });
+        }
+
+        // Datenexport (JSON und CSV)
+        function setupDataExport() {
+            // JSON-Export
+            document.getElementById('exportDataJson').addEventListener('click', () => {
+                const dataStr = JSON.stringify(appData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Zykli_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showNotification('Daten erfolgreich als JSON exportiert!', 'success');
+            });
+
+            // CSV-Export
+            document.getElementById('exportDataCsv').addEventListener('click', () => {
+                exportDataAsCsv();
+            });
+        }
+
+        // Datenimport
+        function setupDataImport() {
+            document.getElementById('importData').addEventListener('click', () => {
+                const fileInput = document.getElementById('importFile');
+
+                if (fileInput.files.length === 0) {
+                    showNotification('Bitte wähle eine Datei aus.', 'error');
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    try {
+                        // Erstelle ein Backup der aktuellen Daten
+                        createBackup(false);
+
+                        // Verarbeite die Datei je nach Typ
+                        if (file.name.endsWith('.json')) {
+                            // JSON-Import
+                            const importedData = JSON.parse(event.target.result);
+
+                            // Validiere die importierten Daten
+                            if (!importedData.cycles || !importedData.entries) {
+                                throw new Error('Ungültiges JSON-Format.');
+                            }
+
+                            // Importiere die Daten
+                            appData = importedData;
+
+                            // Stelle sicher, dass die Backup-Einstellungen existieren
+                            if (!appData.settings.autoBackup) {
+                                appData.settings.autoBackup = {
+                                    enabled: true,
+                                    interval: 7,
+                                    lastBackup: null,
+                                    maxBackups: 30
+                                };
+                            } else if (!appData.settings.autoBackup.maxBackups) {
+                                appData.settings.autoBackup.maxBackups = 30;
+                            }
+
+                            // Aktualisiere die Version
+                            appData.version = APP_VERSION;
+
+                            showNotification('JSON-Daten erfolgreich importiert!', 'success');
+                        } else if (file.name.endsWith('.csv')) {
+                            // CSV-Import
+                            const csvText = event.target.result;
+                            const importedEntries = parseCSV(csvText);
+
+                            if (importedEntries.length === 0) {
+                                throw new Error('Keine gültigen Einträge in der CSV-Datei gefunden.');
+                            }
+
+                            // Füge die importierten Einträge hinzu
+                            for (const entry of importedEntries) {
+                                // Prüfe, ob bereits ein Eintrag für dieses Datum existiert
+                                const existingEntryIndex = appData.entries.findIndex(e => e.date === entry.date);
+
+                                if (existingEntryIndex !== -1) {
+                                    // Aktualisiere den bestehenden Eintrag
+                                    appData.entries[existingEntryIndex] = { ...appData.entries[existingEntryIndex], ...entry };
+                                } else {
+                                    // Füge den neuen Eintrag hinzu
+                                    appData.entries.push(entry);
+                                }
+                            }
+
+                            // Neuberechnung der Zyklen
+                            recalculateCycles();
+
+                            showNotification(`${importedEntries.length} Einträge aus CSV erfolgreich importiert!`, 'success');
+                        } else {
+                            throw new Error('Nicht unterstütztes Dateiformat. Bitte wähle eine .json oder .csv Datei.');
+                        }
+
+                        saveData();
+                        updateUI();
+                    } catch (error) {
+                        console.error('Import-Fehler:', error);
+                        showNotification(`Fehler beim Importieren: ${error.message}`, 'error');
+                    }
+                };
+
+                if (file.name.endsWith('.json') || file.name.endsWith('.csv')) {
+                    reader.readAsText(file);
+                } else {
+                    showNotification('Nicht unterstütztes Dateiformat. Bitte wähle eine .json oder .csv Datei.', 'error');
+                }
+            });
+        }
+
+        // Backup-Einstellungen
+        function setupBackupSettings() {
+            // Automatisches Backup ein-/ausschalten
+            document.getElementById('autoBackupEnabled').addEventListener('change', (event) => {
+                appData.settings.autoBackup.enabled = event.target.checked;
+                saveData();
+            });
+
+            // Backup-Intervall ändern
+            document.getElementById('backupInterval').addEventListener('change', (event) => {
+                const interval = parseInt(event.target.value);
+                if (interval > 0 && interval <= 90) {
+                    appData.settings.autoBackup.interval = interval;
+                    saveData();
+                } else {
+                    event.target.value = appData.settings.autoBackup.interval;
+                    showNotification('Bitte gib einen Wert zwischen 1 und 90 ein.', 'error');
+                }
+            });
+
+            // Maximale Anzahl von Backups ändern
+            document.getElementById('maxBackupsCount').addEventListener('change', (event) => {
+                const maxBackups = parseInt(event.target.value);
+                if (maxBackups >= 5 && maxBackups <= 100) {
+                    appData.settings.autoBackup.maxBackups = maxBackups;
+                    saveData();
+                } else {
+                    event.target.value = appData.settings.autoBackup.maxBackups || 30;
+                    showNotification('Bitte gib einen Wert zwischen 5 und 100 ein.', 'error');
+                }
+            });
+
+            // Manuelles Backup erstellen
+            document.getElementById('createBackup').addEventListener('click', () => {
+                createBackup(false);
+            });
+        }
+
+        // Daten zurücksetzen
+        function setupDataReset() {
+            document.getElementById('resetData').addEventListener('click', () => {
+                if (confirm('Bist du sicher, dass du alle Daten löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+                    // Erstelle ein Backup der aktuellen Daten
+                    createBackup(false);
+
+                    // Initialisiere leeres Datenmodell
+                    appData = {
+                        cycles: [],
+                        entries: [],
+                        settings: {
+                            cycleLength: 28,
+                            periodLength: 5,
+                            autoBackup: {
+                                enabled: true,
+                                interval: 7,
+                                lastBackup: null,
+                                maxBackups: 30
+                            }
+                        },
+                        version: APP_VERSION
+                    };
+
+                    saveData();
+
+                    showNotification('Alle Daten wurden zurückgesetzt.', 'success');
+
+                    // UI aktualisieren
+                    updateUI();
+                }
+            });
+        }
+
+        // Benachrichtigungen
+        function setupNotifications() {
+            document.getElementById('notificationClose').addEventListener('click', () => {
+                document.getElementById('notificationBanner').classList.add('hidden');
+            });
+        }
+
+        // Setup der täglichen Quest
+        function setupDailyQuest() {
+            // Setze das aktuelle Datum
+            updateQuestDate();
+
+            // Navigation zwischen Tagen
+            document.getElementById('prevDay').addEventListener('click', () => {
+                currentQuestDate.setDate(currentQuestDate.getDate() - 1);
+                updateQuestDate();
+            });
+
+            document.getElementById('nextDay').addEventListener('click', () => {
+                currentQuestDate.setDate(currentQuestDate.getDate() + 1);
+                updateQuestDate();
+            });
+
+            // Event-Listener für Quest-Items
+            document.querySelectorAll('.quest-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const type = item.getAttribute('data-type');
+                    const dateString = currentQuestDate.toISOString().split('T')[0];
+
+                    // Öffne das Eingabeformular für dieses Datum
+                    openEntryForm(dateString);
+
+                    // Fokussiere auf das entsprechende Feld im Formular
+                    if (type === 'period') {
+                        document.getElementById('flow-none').focus();
+                    } else if (type === 'temperature') {
+                        document.getElementById('temperature').focus();
+                    } else if (type === 'mucus') {
+                        document.getElementById('cervicalMucus').focus();
+                    } else if (type === 'breast') {
+                        document.getElementById('breastFeeling').focus();
+                    } else if (type === 'pain') {
+                        document.getElementById('symptom-headache').focus();
+                    } else if (type === 'mood') {
+                        document.getElementById('symptom-mood').focus();
+                    } else if (type === 'notes') {
+                        document.getElementById('notes').focus();
+                    }
+                });
+            });
+        }
+
+        // Initialisierung
+        function init() {
+            loadData();
+            setupTabs();
+            setupDialog();
+            setupCalendar();
+            setupDailyQuest();
+            setupDataExport();
+            setupDataImport();
+            setupBackupSettings();
+            setupDataReset();
+            setupNotifications();
+            updateUI();
+        }
+
+        // Starte die App
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
