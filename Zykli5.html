@@ -1,0 +1,5168 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeinZyklus - Tracking App</title>
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --primary-light: #ffb8b8;
+            --primary-dark: #e74c4c;
+            --secondary-color: #ff9e7d;
+            --tertiary-color: #ffcc8e;
+            --fertile-color: #ffc076;
+            --bg-color: #fff5f5;
+            --text-color: #333;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .app-title {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 2.2rem;
+        }
+
+        .app-version {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: bold;
+        }
+
+        .tab:hover {
+            background-color: #f9f9f9;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .cycle-status {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background-color: white;
+            box-shadow: var(--box-shadow);
+        }
+
+        .cycle-wheel {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            position: relative;
+            background-color: #f1f1f1;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cycle-ring {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 30px solid #e0e0e0;
+        }
+
+        .cycle-segment {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            clip: rect(0, 220px, 220px, 110px);
+        }
+
+        .cycle-segment-inner {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            clip: rect(0, 110px, 220px, 0);
+            transform: rotate(var(--rotation));
+            border: 30px solid var(--segment-color);
+        }
+
+        .phase-indicator {
+            width: 150px;
+            height: 150px;
+            background-color: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            z-index: 2;
+        }
+
+        .phase-indicator h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .phase-indicator p {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .countdown {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .prediction-info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            box-shadow: var(--box-shadow);
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background-color: #ff5252;
+        }
+
+        button.secondary {
+            background-color: #6c757d;
+        }
+
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+
+        button.success {
+            background-color: #28a745;
+        }
+
+        button.success:hover {
+            background-color: #218838;
+        }
+
+        /* Daily Quest Grid */
+        .daily-quest {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .quest-header h3 {
+            margin: 0;
+        }
+
+        .quest-date {
+            font-weight: bold;
+        }
+
+        .quest-day {
+            color: #666;
+        }
+
+        .quest-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            padding: 15px 10px;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            background-color: #f8f8f8;
+        }
+
+        .quest-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .quest-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .quest-icon.filled {
+            background-color: #f0f0f0;
+            border: 2px solid var(--primary-color);
+        }
+
+        .icon-period {
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .icon-temperature {
+            color: #ff9500;
+            border: 2px solid #ff9500;
+        }
+
+        .icon-mucus {
+            color: #00b4d8;
+            border: 2px solid #00b4d8;
+        }
+
+        .icon-cervix {
+            color: #9d4edd;
+            border: 2px solid #9d4edd;
+        }
+
+        .icon-intercourse {
+            color: #ff66c4;
+            border: 2px solid #ff66c4;
+        }
+
+        .icon-supplements {
+            color: #0ead69;
+            border: 2px solid #0ead69;
+        }
+
+        .icon-meds {
+            color: #ff7b00;
+            border: 2px solid #ff7b00;
+        }
+
+        .icon-mood {
+            color: #4361ee;
+            border: 2px solid #4361ee;
+        }
+
+        .icon-pain {
+            color: #ef476f;
+            border: 2px solid #ef476f;
+        }
+
+        .icon-weight {
+            color: #118ab2;
+            border: 2px solid #118ab2;
+        }
+
+        .icon-notes {
+            color: #073b4c;
+            border: 2px solid #073b4c;
+        }
+
+        .icon-breast {
+            color: #ff758f;
+            border: 2px solid #ff758f;
+        }
+
+        .icon-settings {
+            color: #6c757d;
+            border: 2px solid #6c757d;
+        }
+
+        .icon-add {
+            color: #28a745;
+            border: 2px solid #28a745;
+        }
+
+        .icon-custom {
+            color: #9c27b0;
+            border: 2px solid #9c27b0;
+        }
+
+        .icon-mittleschmerz {
+            color: #ff9100;
+            border: 2px solid #ff9100;
+        }
+
+        .quest-label {
+            font-size: 0.85rem;
+        }
+
+        .form-dialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .dialog-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dialog-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .dialog-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .dialog-close:hover {
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        input[type="date"],
+        textarea,
+        input[type="number"],
+        input[type="time"],
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+
+        .symptom-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .symptom-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .calendar {
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .calendar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .calendar-tools {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-tool {
+            font-size: 1.2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+            box-shadow: none;
+        }
+
+        .calendar-tool:hover {
+            color: var(--primary-color);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            position: relative;
+            cursor: pointer;
+            padding: 5px;
+            min-height: 40px;
+        }
+
+        .calendar-day:hover {
+            background-color: #f1f1f1;
+        }
+
+        .calendar-day.period {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .calendar-day.fertile {
+            background-color: var(--tertiary-color);
+        }
+
+        .calendar-day.ovulation {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: bold;
+            padding: 5px 0;
+        }
+
+        .day-indicator {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .day-symbol {
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+
+        .symptom-indicator {
+            background-color: #6c63ff;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .stat-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .data-management {
+            margin-top: 20px;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            color: green;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .notification-banner {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-banner button {
+            background-color: transparent;
+            color: #856404;
+            border: 1px solid #856404;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            box-shadow: none;
+        }
+
+        .notification-banner button:hover {
+            background-color: #856404;
+            color: white;
+        }
+
+        .backup-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .backup-history {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .backup-item {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .backup-item:last-child {
+            border-bottom: none;
+        }
+
+        .backup-date {
+            font-weight: bold;
+        }
+
+        .backup-item button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .tab-content-section {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 25px;
+        }
+
+        .tab-content-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Chart styles */
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .export-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 0.8em;
+            font-weight: bold;
+            border-radius: 10px;
+            background-color: #e9ecef;
+            color: #495057;
+            margin-left: 5px;
+        }
+
+        .badge-auto {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .badge-manual {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .info-text {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        table th {
+            background-color: #f8f9fa;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .pagination button {
+            padding: 5px 10px;
+        }
+
+        /* Benutzerdefinierte Parameter Styles */
+        .custom-parameters-container {
+            margin-top: 20px;
+        }
+
+        .custom-parameter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .custom-parameter-name {
+            font-weight: bold;
+        }
+
+        .custom-parameter-type {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .custom-parameter-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .custom-parameter-actions button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .parameter-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            margin-bottom: 5px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .parameter-option button {
+            padding: 2px 8px;
+            font-size: 0.7rem;
+        }
+
+        .option-list {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 5px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        /* Interactive Parameter Control Styles */
+        .interactive-control {
+            width: 100%;
+            margin: 10px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        /* Menstruations-Regler mit Blutstropfen */
+        .blood-drop-slider {
+            position: relative;
+            height: 60px;
+            padding: 15px 0;
+        }
+
+        .blood-drop-slider .slider-track {
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to right, #ffebee, #ffcdd2, #ef9a9a, #e57373, #ef5350, #e53935, #c62828, #b71c1c);
+            border-radius: 5px;
+        }
+
+        .blood-drop-slider .slider-thumb {
+            position: absolute;
+            top: -5px;
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border: 2px solid #e53935;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .blood-drop-slider .slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .blood-drop-slider .slider-value {
+            position: absolute;
+            top: -25px;
+            transform: translateX(-50%);
+            background-color: #e53935;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .blood-drop-animation {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+        }
+
+        /* Vulva-Thermometer Styles */
+        .vulva-thermometer {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            margin: 20px 0;
+        }
+
+        .vulva-shape {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><path d="M10,25 C20,0 40,0 50,15 C60,0 80,0 90,25 C80,40 60,45 50,35 C40,45 20,40 10,25 Z" fill="%23ffcdd2" stroke="%23e57373" stroke-width="2"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.7;
+        }
+
+        .temp-slider {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .temp-value {
+            position: absolute;
+            bottom: -25px;
+            right: 0;
+            font-weight: bold;
+            color: #ff9500;
+        }
+
+        /* Konfetti Animation */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1001;
+            pointer-events: none;
+            overflow: hidden;
+            display: none;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f44336;
+            opacity: 0;
+            animation: confetti-fall 5s ease-in-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                opacity: 1;
+                top: -10px;
+                transform: translateX(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                top: 100%;
+                transform: translateX(100px) rotate(720deg);
+            }
+        }
+
+        /* Smiley mit einstellbarem Mund */
+        .mood-smiley {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #ffeb3b;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .eye {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #333;
+            border-radius: 50%;
+            top: 40px;
+        }
+
+        .eye.left {
+            left: 35px;
+        }
+
+        .eye.right {
+            right: 35px;
+        }
+
+        .mouth {
+            position: absolute;
+            width: 70px;
+            height: 30px;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            overflow: hidden;
+        }
+
+        .mouth-shape {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 5px solid #333;
+            border-color: transparent transparent #333 transparent;
+            box-sizing: border-box;
+            transform: rotate(0deg);
+            transition: transform 0.3s;
+        }
+
+        .mood-slider {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .mood-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        .mood-labels span {
+            font-size: 0.8em;
+        }
+
+        /* Hasen mit Stift Animation */
+        .rabbit-animation {
+            width: 60px;
+            height: 60px;
+            margin: 10px auto;
+            position: relative;
+        }
+
+        .rabbit {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="70" r="30" fill="white" stroke="black" stroke-width="2"/><circle cx="40" cy="60" r="5" fill="black"/><circle cx="60" cy="60" r="5" fill="black"/><path d="M35,40 Q50,20 65,40" fill="none" stroke="black" stroke-width="2"/><path d="M45,80 L55,80" fill="none" stroke="black" stroke-width="2"/><path d="M20,10 Q30,30 40,40" fill="none" stroke="black" stroke-width="2"/><path d="M80,10 Q70,30 60,40" fill="none" stroke="black" stroke-width="2"/></svg>');
+            background-repeat: no-repeat;
+            background-size: contain;
+            animation: rabbit-write 3s infinite;
+        }
+
+        .pencil {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M30,90 L10,70 L60,20 L80,40 Z" fill="yellow" stroke="black" stroke-width="2"/><path d="M80,40 L90,30 L70,10 L60,20 Z" fill="pink" stroke="black" stroke-width="2"/><path d="M10,70 L5,95 L30,90 Z" fill="brown" stroke="black" stroke-width="2"/></svg>');
+            background-repeat: no-repeat;
+            background-size: contain;
+            right: 0;
+            bottom: 0;
+            animation: pencil-write 3s infinite;
+        }
+
+        @keyframes rabbit-write {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(2px, -2px) rotate(2deg); }
+            50% { transform: translate(0, 0) rotate(0deg); }
+            75% { transform: translate(-2px, -2px) rotate(-2deg); }
+        }
+
+        @keyframes pencil-write {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(5px, 2px) rotate(10deg); }
+            50% { transform: translate(2px, 5px) rotate(0deg); }
+            75% { transform: translate(-2px, 3px) rotate(-10deg); }
+        }
+
+        /* Kopfschmerz-Animation mit Ballon und Specht */
+        .headache-animation {
+            position: relative;
+            width: 100px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .balloon-head {
+            position: absolute;
+            width: 70px;
+            height: 100px;
+            background-color: #ffcdd2;
+            border-radius: 50%;
+            left: 10px;
+            top: 10px;
+        }
+
+        .woodpecker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,50 Q30,20 50,20 Q70,20 80,50" fill="green"/><circle cx="50" cy="30" r="15" fill="red"/><path d="M50,30 L40,60" fill="none" stroke="black" stroke-width="2"/><path d="M50,90 L40,60" fill="none" stroke="black" stroke-width="2"/><path d="M65,40 L95,30" fill="none" stroke="black" stroke-width="4" stroke-linecap="round"/></svg>');
+            background-repeat: no-repeat;
+            background-size: contain;
+            right: 0;
+            top: 0;
+            transform-origin: 0% 100%;
+            animation: woodpecker-peck 1s infinite;
+        }
+
+        @keyframes woodpecker-peck {
+            0%, 10%, 90%, 100% { transform: rotate(0deg); }
+            45%, 55% { transform: rotate(-30deg); }
+        }
+
+        .headache-slider {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .headache-value {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* Grocery List Styles */
+        .grocery-list {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .grocery-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .grocery-item:last-child {
+            border-bottom: none;
+        }
+
+        .grocery-input-container {
+            display: flex;
+            margin-top: 10px;
+            gap: 10px;
+        }
+
+        .grocery-input-container input {
+            flex: 1;
+        }
+
+        /* Zervixschleim-Auswahl */
+        .mucus-options {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .mucus-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .mucus-option:hover, .mucus-option.selected {
+            background-color: #e3f2fd;
+        }
+
+        .mucus-icon {
+            width: 30px;
+            height: 30px;
+            margin-bottom: 5px;
+            border-radius: 50%;
+        }
+
+        .mucus-dry {
+            background-color: #f5f5f5;
+        }
+
+        .mucus-sticky {
+            background-color: #fff9c4;
+        }
+
+        .mucus-creamy {
+            background-color: #fff8e1;
+        }
+
+        .mucus-watery {
+            background-color: #e1f5fe;
+        }
+
+        .mucus-egg-white {
+            background-color: #f1f8e9;
+            background-image: linear-gradient(45deg, #f1f8e9 25%, transparent 25%, transparent 50%, #f1f8e9 50%, #f1f8e9 75%, transparent 75%, transparent);
+            background-size: 10px 10px;
+        }
+
+        .mucus-label {
+            font-size: 0.8em;
+            text-align: center;
+        }
+
+        /* Mobile Anpassungen */
+        @media (max-width: 600px) {
+            .daily-quest {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .symptom-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .export-options {
+                flex-direction: column;
+            }
+
+            .mucus-options {
+                flex-wrap: wrap;
+            }
+
+            .mucus-option {
+                width: 30%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="app-title">MeinZyklus</h1>
+        <div class="app-version">Version 2.0.0</div>
+        <p>Zyklustracking-App</p>
+    </header>
+
+    <div id="notificationBanner" class="notification-banner hidden">
+        <span id="notificationText">Benachrichtigung</span>
+        <button id="notificationClose">Schließen</button>
+    </div>
+
+    <div class="cycle-status">
+        <div class="cycle-wheel" id="cycleWheel">
+            <div class="cycle-ring" id="cycleRing"></div>
+            <div class="phase-indicator" id="phaseIndicator">
+                <h2 id="cycleDay">Tag --</h2>
+                <p id="cyclePhase">--</p>
+                <div class="countdown">
+                    <span id="nextPeriod">--</span> Tage bis zur nächsten Periode
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="heute">Heute</div>
+        <div class="tab" data-tab="kalender">Kalender</div>
+        <div class="tab" data-tab="statistik">Statistik</div>
+        <div class="tab" data-tab="einstellungen">Einstellungen</div>
+    </div>
+
+    <div class="tab-content active" id="heute">
+        <div class="quest-header">
+            <div>
+                <h3>Tägliche Quest</h3>
+                <div>
+                    <span class="quest-date" id="questDate">22. März 2025</span>
+                    <span class="quest-day" id="questDay">Samstag</span>
+                </div>
+            </div>
+            <button id="prevDay">←</button>
+            <button id="nextDay">→</button>
+        </div>
+
+        <div class="daily-quest" id="dailyQuestContainer">
+            <div class="quest-item" data-type="period">
+                <div class="quest-icon icon-period">🩸</div>
+                <div class="quest-label">Menstruation</div>
+            </div>
+            <div class="quest-item" data-type="temperature">
+                <div class="quest-icon icon-temperature">🌡️</div>
+                <div class="quest-label">Temperatur</div>
+            </div>
+            <div class="quest-item" data-type="mucus">
+                <div class="quest-icon icon-mucus">💧</div>
+                <div class="quest-label">Schleim</div>
+            </div>
+            <div class="quest-item" data-type="cervix">
+                <div class="quest-icon icon-cervix">⭕</div>
+                <div class="quest-label">Gebärmutterhals</div>
+            </div>
+            <div class="quest-item" data-type="mittleschmerz">
+                <div class="quest-icon icon-mittleschmerz">⚡</div>
+                <div class="quest-label">Mittelschmerz</div>
+            </div>
+            <div class="quest-item" data-type="intercourse">
+                <div class="quest-icon icon-intercourse">💜</div>
+                <div class="quest-label">Geschlechtsv.</div>
+            </div>
+            <div class="quest-item" data-type="supplements">
+                <div class="quest-icon icon-supplements">🌿</div>
+                <div class="quest-label">Nahrungserg.</div>
+            </div>
+            <div class="quest-item" data-type="medication">
+                <div class="quest-icon icon-meds">💊</div>
+                <div class="quest-label">Medikamente</div>
+            </div>
+            <div class="quest-item" data-type="mood">
+                <div class="quest-icon icon-mood">😊</div>
+                <div class="quest-label">Stimmung</div>
+            </div>
+            <div class="quest-item" data-type="pain">
+                <div class="quest-icon icon-pain">🤕</div>
+                <div class="quest-label">Kopfschmerzen</div>
+            </div>
+            <div class="quest-item" data-type="weight">
+                <div class="quest-icon icon-weight">⚖️</div>
+                <div class="quest-label">Gewicht</div>
+            </div>
+            <div class="quest-item" data-type="notes">
+                <div class="quest-icon icon-notes">📝</div>
+                <div class="quest-label">Notizen</div>
+            </div>
+            <div class="quest-item" data-type="breast">
+                <div class="quest-icon icon-breast">👚</div>
+                <div class="quest-label">Brustgefühl</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="kalender">
+        <div class="calendar-header">
+            <div class="calendar-title">
+                <button id="prevMonth">←</button>
+                <h3 id="currentMonth">März 2025</h3>
+                <button id="nextMonth">→</button>
+            </div>
+            <div class="calendar-tools">
+                <button class="calendar-tool" id="calendarSearch">🔍</button>
+                <button class="calendar-tool" id="calendarSettings">⚙️</button>
+            </div>
+        </div>
+        <div class="calendar-day-header">
+            <div class="calendar-grid">
+                <div>Mo</div>
+                <div>Di</div>
+                <div>Mi</div>
+                <div>Do</div>
+                <div>Fr</div>
+                <div>Sa</div>
+                <div>So</div>
+            </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+            <!-- Kalendertage werden per JavaScript eingefügt -->
+        </div>
+
+        <div style="margin-top: 15px;">
+            <h4>Legende:</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--primary-color); margin-right: 5px;">🩸₁</span>
+                    <span>Spotting</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--primary-color); margin-right: 5px;">🩸₂</span>
+                    <span>Leicht</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--primary-color); margin-right: 5px;">🩸₃</span>
+                    <span>Mittel</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--primary-color); margin-right: 5px;">🩸₄</span>
+                    <span>Stark</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--tertiary-color); margin-right: 5px;">🟠</span>
+                    <span>Fruchtbare Tage</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="margin-right: 5px;">🌼</span>
+                    <span>Eisprung</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="margin-right: 5px;">🌙</span>
+                    <span>Mondphase</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span style="color: #ff66c4; margin-right: 5px;">💜</span>
+                    <span>Geschlechtsverkehr</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="statistik">
+        <h2>Zyklusstatistik</h2>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-title">Durchschnittliche Zykluslänge</div>
+                <div id="avgCycleLength">-- Tage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Durchschnittliche Periodenlänge</div>
+                <div id="avgPeriodLength">-- Tage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Häufigste Symptome</div>
+                <div id="topSymptoms">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Letzte Zyklen</div>
+                <div id="recentCycles">--</div>
+            </div>
+        </div>
+
+        <div id="customParametersStats">
+            <!-- Hier werden die Statistiken für benutzerdefinierte Parameter eingefügt -->
+        </div>
+
+        <div class="table-container">
+            <h3 class="section-title">Eintragsübersicht</h3>
+            <table id="entriesTable">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Periode</th>
+                        <th>Temperatur</th>
+                        <th>Symptome</th>
+                        <th>Benutzerdefiniert</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Tabellendaten werden per JavaScript eingefügt -->
+                </tbody>
+            </table>
+            <div class="pagination" id="entriesPagination">
+                <!-- Paginierung wird per JavaScript eingefügt -->
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="einstellungen">
+        <h2>Einstellungen & Daten</h2>
+
+        <!-- Bereich für benutzerdefinierte Parameter -->
+        <div class="tab-content-section">
+            <h3 class="section-title">Benutzerdefinierte Parameter</h3>
+            <p>Erstelle eigene Parameter, die du täglich tracken möchtest:</p>
+
+            <div class="custom-parameters-container" id="customParametersContainer">
+                <!-- Hier werden die benutzerdefinierten Parameter angezeigt -->
+                <div class="info-text" id="noCustomParametersInfo">Keine benutzerdefinierten Parameter vorhanden. Klicke auf 'Neuer Parameter', um einen zu erstellen.</div>
+            </div>
+
+            <div class="button-container">
+                <button id="newCustomParameter">Neuer Parameter</button>
+            </div>
+        </div>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Automatisches Backup</h3>
+            <div class="switch-container">
+                <label class="switch">
+                    <input type="checkbox" id="autoBackupEnabled" checked>
+                    <span class="slider"></span>
+                </label>
+                <span>Automatisches Backup aktivieren</span>
+            </div>
+
+            <div class="form-group">
+                <label>Backup-Intervall (in Tagen):</label>
+                <input type="number" id="backupInterval" min="1" max="90" value="7">
+            </div>
+
+            <div class="form-group">
+                <label>Maximale Anzahl von Backups:</label>
+                <input type="number" id="maxBackupsCount" min="5" max="100" value="30">
+                <p class="info-text">Höhere Werte ermöglichen mehr Historie, nutzen aber mehr Speicherplatz.</p>
+            </div>
+        </div>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Backup-Historie</h3>
+            <div class="backup-history" id="backupHistory">
+                <!-- Backup-Historie wird per JavaScript eingefügt -->
+                <div class="backup-item">
+                    <span class="backup-date">Keine Backups vorhanden</span>
+                </div>
+            </div>
+            <div class="button-container">
+                <button id="createBackup">Manuelles Backup erstellen</button>
+            </div>
+        </div>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Datenexport</h3>
+            <p>Exportiere deine Daten für externe Sicherung oder Übertragung auf ein anderes Gerät:</p>
+            <div class="export-options">
+                <button id="exportDataJson">Als JSON exportieren</button>
+                <button id="exportDataCsv">Als CSV exportieren</button>
+            </div>
+        </div>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Datenimport</h3>
+            <p>Lade eine zuvor exportierte Datei (JSON oder CSV):</p>
+            <div class="form-group">
+                <input type="file" id="importFile" accept=".json,.csv">
+                <div class="button-container">
+                    <button id="importData">Daten importieren</button>
+                </div>
+                <div id="importMessage" class="hidden"></div>
+            </div>
+            <p class="info-text">
+                <strong>Hinweis:</strong> Browser können aus Sicherheitsgründen nicht direkt auf den "Zykli"-Ordner
+                zugreifen. Bitte navigiere manuell zu diesem Ordner, wenn du die Dateiauswahl öffnest.
+            </p>
+        </div>
+
+        <div class="tab-content-section">
+            <h3 class="section-title">Daten zurücksetzen</h3>
+            <p>Vorsicht: Diese Aktion kann nicht rückgängig gemacht werden!</p>
+            <div class="button-container">
+                <button id="resetData">Alle Daten löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Neue interaktive Eingabeformulare -->
+    <div class="form-dialog" id="periodDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Menstruation</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Stärke der Menstruation:</label>
+                <div class="blood-drop-slider">
+                    <div class="slider-track"></div>
+                    <div class="slider-thumb" id="periodSliderThumb"></div>
+                    <div class="slider-value" id="periodValue">0</div>
+                    <div class="blood-drop-animation" id="bloodDropAnimation">
+                        <svg width="40" height="40" viewBox="0 0 40 40">
+                            <path id="bloodDrop" d="M20,0 C20,0 10,20 10,30 C10,35.5 14.5,40 20,40 C25.5,40 30,35.5 30,30 C30,20 20,0 20,0 Z" fill="#ffcdd2" />
+                        </svg>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <span>Keine</span>
+                    <span>Stark</span>
+                </div>
+                <div class="button-container">
+                    <button type="button" id="savePeriodBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="temperatureDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Basaltemperatur</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Körpertemperatur in °C:</label>
+                <div class="vulva-thermometer">
+                    <div class="vulva-shape"></div>
+                    <input type="range" class="temp-slider" id="temperatureSlider" min="35.0" max="41.0" step="0.1" value="36.5">
+                    <div class="temp-value" id="temperatureValue">36.5 °C</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+                    <span>35.0 °C</span>
+                    <span>41.0 °C</span>
+                </div>
+                <div class="button-container">
+                    <button type="button" id="saveTemperatureBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="cervixDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Gebärmutterhals</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Position des Gebärmutterhalses:</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" name="cervixPosition" id="cervix-position-low" value="LOW">
+                        <label for="cervix-position-low">Tief</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="cervixPosition" id="cervix-position-medium" value="MEDIUM">
+                        <label for="cervix-position-medium">Mittel</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="cervixPosition" id="cervix-position-high" value="HIGH">
+                        <label for="cervix-position-high">Hoch</label>
+                    </div>
+                </div>
+
+                <label style="margin-top: 15px">Öffnung des Muttermundes:</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" name="cervixOpening" id="cervix-opening-closed" value="CLOSED">
+                        <label for="cervix-opening-closed">Geschlossen</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="cervixOpening" id="cervix-opening-slightly" value="SLIGHTLY_OPEN">
+                        <label for="cervix-opening-slightly">Leicht geöffnet</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="cervixOpening" id="cervix-opening-open" value="OPEN">
+                        <label for="cervix-opening-open">Geöffnet</label>
+                    </div>
+                </div>
+
+                <label style="margin-top: 15px">Festigkeit des Gebärmutterhalses:</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" name="cervixFirmness" id="cervix-firmness-firm" value="FIRM">
+                        <label for="cervix-firmness-firm">Fest</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="cervixFirmness" id="cervix-firmness-medium" value="MEDIUM">
+                        <label for="cervix-firmness-medium">Mittel</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="cervixFirmness" id="cervix-firmness-soft" value="SOFT">
+                        <label for="cervix-firmness-soft">Weich</label>
+                    </div>
+                </div>
+
+                <div class="button-container" style="margin-top: 20px;">
+                    <button type="button" id="saveCervixBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="mittleschmerzDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Mittelschmerz</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Spürst du heute Mittelschmerz (Schmerzen im Unterleib während des Eisprungs)?</label>
+                <div style="display: flex; justify-content: center; gap: 20px; margin: 20px 0;">
+                    <button type="button" id="mittleschmerzYesBtn" style="padding: 15px 30px;">Ja</button>
+                    <button type="button" id="mittleschmerzNoBtn" class="secondary" style="padding: 15px 30px;">Nein</button>
+                </div>
+                <p class="info-text">Mittelschmerz ist ein leichter, einseitiger Schmerz im Unterbauch, der während des Eisprungs auftreten kann. Er ist ein wertvoller Indikator für die Bestimmung deiner fruchtbaren Tage.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="intercourseDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Geschlechtsverkehr</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Hast du heute Geschlechtsverkehr gehabt?</label>
+                <div style="display: flex; justify-content: center; gap: 20px; margin: 20px 0;">
+                    <button type="button" id="intercourseYesBtn" style="padding: 15px 30px;">Ja</button>
+                    <button type="button" id="intercourseNoBtn" class="secondary" style="padding: 15px 30px;">Nein</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="medicationDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Medikamente</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Welche Medikamente hast du heute genommen?</label>
+                <textarea id="medicationText" rows="4" placeholder="z.B. Ibuprofen 400mg, Folsäure 400μg"></textarea>
+                <div class="button-container">
+                    <button type="button" id="saveMedicationBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="weightDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Gewicht</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Dein aktuelles Gewicht in kg:</label>
+                <input type="number" id="weightInput" min="30" max="200" step="0.1" placeholder="Gewicht in kg">
+                <div class="button-container">
+                    <button type="button" id="saveWeightBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="moodDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Stimmung</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Wie ist deine Stimmung heute?</label>
+                <div class="mood-smiley">
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                    <div class="mouth">
+                        <div class="mouth-shape" id="mouthShape"></div>
+                    </div>
+                </div>
+                <input type="range" class="mood-slider" id="moodSlider" min="0" max="9" step="1" value="5">
+                <div class="mood-labels">
+                    <span>Sehr traurig</span>
+                    <span>Super</span>
+                </div>
+                <div class="button-container">
+                    <button type="button" id="saveMoodBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="notesDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Tagebuch</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <div class="rabbit-animation">
+                    <div class="rabbit"></div>
+                    <div class="pencil"></div>
+                </div>
+                <label>Deine Notizen für heute:</label>
+                <textarea id="notesText" rows="6" placeholder="Schreibe hier deine Gedanken und Erlebnisse auf..."></textarea>
+                <div class="button-container">
+                    <button type="button" id="saveNotesBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="mucusDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Zervixschleim</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Welche Viskosität hat dein Zervixschleim heute?</label>
+                <div class="mucus-options">
+                    <div class="mucus-option" data-value="DRY">
+                        <div class="mucus-icon mucus-dry"></div>
+                        <span class="mucus-label">Trocken</span>
+                    </div>
+                    <div class="mucus-option" data-value="STICKY">
+                        <div class="mucus-icon mucus-sticky"></div>
+                        <span class="mucus-label">Klebrig</span>
+                    </div>
+                    <div class="mucus-option" data-value="CREAMY">
+                        <div class="mucus-icon mucus-creamy"></div>
+                        <span class="mucus-label">Cremig</span>
+                    </div>
+                    <div class="mucus-option" data-value="WATERY">
+                        <div class="mucus-icon mucus-watery"></div>
+                        <span class="mucus-label">Wässrig</span>
+                    </div>
+                    <div class="mucus-option" data-value="EGG_WHITE">
+                        <div class="mucus-icon mucus-egg-white"></div>
+                        <span class="mucus-label">Spinnbar</span>
+                    </div>
+                </div>
+                <div class="button-container" style="margin-top: 20px;">
+                    <button type="button" id="saveMucusBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="painDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Kopfschmerzen</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Wie stark sind deine Kopfschmerzen heute?</label>
+                <div class="headache-animation">
+                    <div class="balloon-head"></div>
+                    <div class="woodpecker" id="woodpecker"></div>
+                </div>
+                <input type="range" class="headache-slider" id="headacheSlider" min="0" max="10" value="0">
+                <div class="headache-value" id="headacheValue">0 - Keine Schmerzen</div>
+                <div class="button-container">
+                    <button type="button" id="savePainBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="supplementsDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Nahrungsergänzungsmittel</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Welche Nahrungsergänzungsmittel hast du heute genommen?</label>
+                <div class="grocery-input-container">
+                    <input type="text" id="supplementInput" placeholder="Neues Nahrungsergänzungsmittel">
+                    <button type="button" id="addSupplementBtn" class="secondary">Hinzufügen</button>
+                </div>
+                <div class="grocery-list" id="supplementsList">
+                    <!-- Liste wird per JavaScript gefüllt -->
+                </div>
+                <div class="button-container">
+                    <button type="button" id="saveSupplementsBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-dialog" id="breastDialog">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Brustgefühl</h3>
+                <button class="dialog-close">&times;</button>
+            </div>
+            <div class="interactive-control">
+                <label>Wie fühlen sich deine Brüste heute an?</label>
+                <div style="margin: 15px 0;">
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="breastFeeling" id="breast-none" value="NONE" checked>
+                            <label for="breast-none">Keine Beschwerden</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="breastFeeling" id="breast-sensitive" value="SENSITIVE">
+                            <label for="breast-sensitive">Empfindlich</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="breastFeeling" id="breast-tense" value="TENSE">
+                            <label for="breast-tense">Spannt</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="breastFeeling" id="breast-painful" value="PAINFUL">
+                            <label for="breast-painful">Schmerzt</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="breastFeeling" id="breast-very-painful" value="VERY_PAINFUL">
+                            <label for="breast-very-painful">Sehr schmerzhaft</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button type="button" id="saveBreastBtn">Speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Konfetti-Container -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <script>
+        // Multi-Parameter-Eisprung-Algorithmus
+        class OvulationPredictor {
+          constructor(userData) {
+            this.userData = userData;
+            this.weights = {
+              temperature: 0.35,    // Temperaturanstieg
+              mucus: 0.25,          // Zervixschleim-Qualität
+              cervixPosition: 0.15, // Gebärmutterhalsposition
+              cervixOpening: 0.10,  // Muttermundöffnung
+              cervixFirmness: 0.10, // Gebärmutterhalsfestigkeit
+              symptoms: 0.05        // Weitere Symptome (Spannen der Brust, etc.)
+            };
+          }
+
+          // Hauptfunktion zur Auswertung des Zyklusstatus
+          analyzeCurrentCycle() {
+            const { entries, cycles } = this.userData;
+            if (entries.length === 0) return null;
+
+            // Bestimme aktuellen Zyklus
+            const currentDate = new Date();
+            const currentCycle = this.getCurrentCycle(currentDate, cycles, entries);
+            if (!currentCycle) return null;
+
+            // Sichere Berechnung der erwarteten Zykluslänge basierend auf historischen Daten
+            const expectedCycleLength = this.calculateExpectedCycleLength(cycles);
+
+            // Bestimme erwartetes Zyklusfenster für den Eisprung (typischerweise 14 Tage vor nächster Periode)
+            const cycleStartDate = new Date(currentCycle.startDate);
+            const expectedOvulationDate = new Date(cycleStartDate);
+            expectedOvulationDate.setDate(cycleStartDate.getDate() + (expectedCycleLength - 14));
+
+            // Erstelle ein 6-Tage-Fenster um den erwarteten Eisprung
+            const fertileWindow = {
+              start: new Date(expectedOvulationDate),
+              end: new Date(expectedOvulationDate)
+            };
+            fertileWindow.start.setDate(expectedOvulationDate.getDate() - 3);
+            fertileWindow.end.setDate(expectedOvulationDate.getDate() + 2);
+
+            // Sammle Einträge im fruchtbaren Fenster
+            const entriesInWindow = this.getEntriesInDateRange(
+              entries,
+              fertileWindow.start,
+              fertileWindow.end
+            );
+
+            // Für jeden Tag im Fenster, berechne die Wahrscheinlichkeit des Eisprungs
+            const dailyScores = this.calculateDailyScores(entries, entriesInWindow, expectedOvulationDate);
+
+            // Finde den Tag mit dem höchsten Score
+            const predictedOvulationDay = this.findHighestScoringDay(dailyScores);
+
+            // Berechne Konfidenz basierend auf Datenmenge und Score-Höhe
+            const confidence = this.calculateConfidence(entries, entriesInWindow, predictedOvulationDay);
+
+            return {
+              currentCycleStartDate: currentCycle.startDate,
+              expectedPeriodDate: new Date(new Date(cycleStartDate).setDate(cycleStartDate.getDate() + expectedCycleLength)),
+              predictedOvulationDate: predictedOvulationDay ? predictedOvulationDay.date : null,
+              probabilityScore: predictedOvulationDay ? predictedOvulationDay.score : 0,
+              confidence: confidence,
+              fertileWindow: {
+                start: fertileWindow.start,
+                end: fertileWindow.end
+              }
+            };
+          }
+
+          // Finde aktuellen Zyklus
+          getCurrentCycle(currentDate, cycles, entries) {
+            // Sortiere Zyklen nach Startdatum
+            const sortedCycles = [...cycles].sort((a, b) =>
+              new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+
+            // Finde neuesten Zyklus
+            if (sortedCycles.length > 0) {
+              return sortedCycles[0];
+            }
+
+            // Wenn keine Zyklen, suche nach neuester Periode in Einträgen
+            const periodEntries = entries.filter(entry => entry.flow && entry.flow !== 'NONE')
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            if (periodEntries.length > 0) {
+              return {
+                startDate: periodEntries[0].date,
+                endDate: null
+              };
+            }
+
+            return null;
+          }
+
+          // Berechne erwartete Zykluslänge basierend auf historischen Daten
+          calculateExpectedCycleLength(cycles) {
+            if (cycles.length < 2) return 28; // Standard falls nicht genug Daten
+
+            // Berechne Länge der letzten 6 Zyklen (oder weniger, falls nicht genug Daten)
+            const recentCycles = cycles.slice(-6);
+            const cycleLengths = [];
+
+            for (let i = 0; i < recentCycles.length - 1; i++) {
+              const startDate = new Date(recentCycles[i].startDate);
+              const endDate = new Date(recentCycles[i+1].startDate);
+              const cycleDays = Math.round((endDate - startDate) / (24 * 60 * 60 * 1000));
+
+              // Nur Zyklen zwischen 21 und 40 Tagen für die Berechnung verwenden (Ausreißer ignorieren)
+              if (cycleDays >= 21 && cycleDays <= 40) {
+                cycleLengths.push(cycleDays);
+              }
+            }
+
+            if (cycleLengths.length === 0) return 28;
+
+            // Durchschnitt der letzten Zykluslängen
+            return Math.round(cycleLengths.reduce((sum, length) => sum + length, 0) / cycleLengths.length);
+          }
+
+          // Sammle Einträge innerhalb eines Datumbereichs
+          getEntriesInDateRange(entries, startDate, endDate) {
+            return entries.filter(entry => {
+              const entryDate = new Date(entry.date);
+              return entryDate >= startDate && entryDate <= endDate;
+            });
+          }
+
+          // Hilfsfunktion zum Finden eines Eintrags für ein bestimmtes Datum
+          getEntryForDate(date, entries) {
+            const dateStr = date.toISOString().split('T')[0];
+            return entries.find(entry => entry.date === dateStr);
+          }
+
+          // Berechne Eisprung-Scores für jeden Tag im fruchtbaren Fenster
+          calculateDailyScores(allEntries, entriesInWindow, expectedOvulationDate) {
+            const dailyScores = [];
+
+            // Gruppiere Einträge nach Datum
+            const entriesByDate = {};
+            entriesInWindow.forEach(entry => {
+              entriesByDate[entry.date] = entry;
+            });
+
+            // Berechne Score für jeden Tag
+            Object.keys(entriesByDate).forEach(dateStr => {
+              const entry = entriesByDate[dateStr];
+              const entryDate = new Date(dateStr);
+
+              // Initialisiere Score
+              let score = 0;
+              let factorsConsidered = 0;
+              let detailScores = {};
+
+              // 1. Bewerte Basaltemperatur
+              if (entry.temperature) {
+                const tempScore = this.evaluateTemperaturePattern(allEntries, entry, dateStr);
+                if (tempScore) {
+                  score += tempScore * this.weights.temperature;
+                  detailScores.temperature = tempScore;
+                  factorsConsidered++;
+                }
+              }
+
+              // 2. Bewerte Zervixschleim
+              if (entry.cervicalMucus) {
+                const mucusScore = this.evaluateCervicalMucus(entry.cervicalMucus, entry.mucusAmount);
+                score += mucusScore * this.weights.mucus;
+                detailScores.mucus = mucusScore;
+                factorsConsidered++;
+              }
+
+              // 3. Bewerte Gebärmutterhalsposition
+              if (entry.cervixPosition) {
+                const positionScore = this.evaluateCervixPosition(entry.cervixPosition);
+                score += positionScore * this.weights.cervixPosition;
+                detailScores.cervixPosition = positionScore;
+                factorsConsidered++;
+              }
+
+              // 4. Bewerte Öffnung des Muttermundes
+              if (entry.cervixOpening) {
+                const openingScore = this.evaluateCervixOpening(entry.cervixOpening);
+                score += openingScore * this.weights.cervixOpening;
+                detailScores.cervixOpening = openingScore;
+                factorsConsidered++;
+              }
+
+              // 5. Bewerte Festigkeit des Gebärmutterhalses
+              if (entry.cervixFirmness) {
+                const firmnessScore = this.evaluateCervixFirmness(entry.cervixFirmness);
+                score += firmnessScore * this.weights.cervixFirmness;
+                detailScores.cervixFirmness = firmnessScore;
+                factorsConsidered++;
+              }
+
+              // 6. Bewerte Symptome (inklusive Brustgefühl)
+              const symptomsScore = this.evaluateSymptoms(entry);
+              if (symptomsScore > 0) {
+                score += symptomsScore * this.weights.symptoms;
+                detailScores.symptoms = symptomsScore;
+                factorsConsidered++;
+              }
+
+              // 7. Zeitliche Nähe zum erwarteten Eisprung
+              const daysFromExpected = Math.abs(entryDate - expectedOvulationDate) / (24 * 60 * 60 * 1000);
+              const timeProximityFactor = Math.max(0, 1 - (daysFromExpected / 4)); // Max Faktor bei 0 Tagen Abstand, Min bei 4+ Tagen
+
+              // Normalisiere Score basierend auf vorhandenen Faktoren
+              if (factorsConsidered > 0) {
+                // Berücksichtige zeitliche Nähe und normalisiere den Score
+                score = score * 0.7 + timeProximityFactor * 0.3;
+              } else {
+                // Wenn keine Faktoren vorhanden sind, verwende nur zeitliche Nähe mit geringerem Gewicht
+                score = timeProximityFactor * 0.5;
+              }
+
+              dailyScores.push({
+                date: dateStr,
+                score: score,
+                detailScores: detailScores,
+                factorsConsidered: factorsConsidered
+              });
+            });
+
+            return dailyScores;
+          }
+
+          // Auswertung des Temperaturmusters (biphasischer Verlauf)
+          evaluateTemperaturePattern(allEntries, currentEntry, dateStr) {
+            // Sortiere alle Einträge nach Datum
+            const sortedEntries = [...allEntries].sort((a, b) =>
+              new Date(a.date).getTime() - new Date(b.date).getTime());
+
+            // Finde Index des aktuellen Eintrags
+            const currentIndex = sortedEntries.findIndex(entry => entry.date === dateStr);
+            if (currentIndex === -1) return 0;
+
+            const currentTemp = parseFloat(currentEntry.temperature);
+
+            // Analysiere Temperaturtrend
+            // 1. Fall: Temperatur ist am aktuellen Tag deutlich höher als an Vortagen (möglicher Eisprung vor 1-2 Tagen)
+            if (currentIndex >= 3) {
+              const prevEntries = sortedEntries.slice(currentIndex - 3, currentIndex)
+                .filter(entry => entry.temperature);
+
+              if (prevEntries.length >= 2) {
+                const avgPrevTemp = prevEntries.reduce((sum, entry) =>
+                  sum + parseFloat(entry.temperature), 0) / prevEntries.length;
+
+                if (currentTemp > avgPrevTemp + 0.2) {
+                  // Temperaturanstieg deutet auf kürzlich erfolgten Eisprung hin
+                  return 0.7; // Eisprung wahrscheinlich 1-2 Tage zurück
+                }
+              }
+            }
+
+            // 2. Fall: Temperatur folgt dem typischen Muster kurz vor Eisprung (leichter Abfall)
+            if (currentIndex >= 2 && currentIndex < sortedEntries.length - 1) {
+              const prevEntry1 = sortedEntries[currentIndex - 1];
+              const prevEntry2 = sortedEntries[currentIndex - 2];
+              const nextEntry = sortedEntries[currentIndex + 1];
+
+              if (prevEntry1.temperature && prevEntry2.temperature && nextEntry.temperature) {
+                const prev1Temp = parseFloat(prevEntry1.temperature);
+                const prev2Temp = parseFloat(prevEntry2.temperature);
+                const nextTemp = parseFloat(nextEntry.temperature);
+
+                // Typisches Muster: leichter Abfall kurz vor Eisprung, dann starker Anstieg
+                if (currentTemp < prev1Temp && currentTemp < prev2Temp && nextTemp > currentTemp + 0.2) {
+                  return 0.9; // Sehr wahrscheinlich Tag des Eisprungs
+                }
+              }
+            }
+
+            // 3. Fall: Aktuelle Temperatur ist relativ niedrig im Vergleich zum Zyklus
+            // (Typisch für die erste Zyklushälfte, vor dem Eisprung)
+            const tempEntries = sortedEntries.filter(entry => entry.temperature);
+            if (tempEntries.length >= 5) {
+              const temps = tempEntries.map(entry => parseFloat(entry.temperature));
+              const minTemp = Math.min(...temps);
+              const maxTemp = Math.max(...temps);
+              const tempRange = maxTemp - minTemp;
+
+              if (tempRange > 0.3) { // Nur relevant bei ausreichendem Temperaturbereich
+                const normalizedTemp = (currentTemp - minTemp) / tempRange;
+                if (normalizedTemp < 0.3) {
+                  return 0.6; // Niedrige Temperatur deutet auf Nähe zum Eisprung hin
+                }
+              }
+            }
+
+            // Standardwert, wenn keine klaren Muster erkennbar sind
+            return 0.3;
+          }
+
+          // Auswertung des Zervixschleims
+          evaluateCervicalMucus(mucusType, mucusAmount = "MEDIUM") {
+            // Beziehung: Siehe Studie von Billings et al. (1972) und Fehring (2002)
+            // Spinnbarer/eiweißartiger Schleim ist der beste Indikator für Fruchtbarkeit
+            switch (mucusType) {
+              case 'EGG_WHITE':
+                // Spinnbarer Schleim - stärkster Indikator für Fruchtbarkeit
+                return mucusAmount === "LOT" ? 0.95 :
+                      mucusAmount === "MEDIUM" ? 0.9 : 0.85;
+
+              case 'WATERY':
+                // Wässriger Schleim - sehr guter Indikator für nahenden Eisprung
+                return mucusAmount === "LOT" ? 0.85 :
+                      mucusAmount === "MEDIUM" ? 0.8 : 0.75;
+
+              case 'CREAMY':
+                // Cremiger Schleim - mittlerer Indikator
+                return mucusAmount === "LOT" ? 0.6 :
+                      mucusAmount === "MEDIUM" ? 0.5 : 0.4;
+
+              case 'STICKY':
+                // Klebriger Schleim - niedrigere Fruchtbarkeit
+                return 0.2;
+
+              case 'DRY':
+                // Trocken - geringste Fruchtbarkeit
+                return 0.1;
+
+              default:
+                return 0;
+            }
+          }
+
+          // Auswertung der Gebärmutterhalsposition
+          evaluateCervixPosition(position) {
+            // Hohe Position ist typisch während der fruchtbaren Phase
+            switch (position) {
+              case 'HIGH':
+                return 0.9; // Sehr wahrscheinlich fruchtbar
+              case 'MEDIUM':
+                return 0.5; // Mittlere Wahrscheinlichkeit
+              case 'LOW':
+                return 0.1; // Geringe Wahrscheinlichkeit
+              default:
+                return 0;
+            }
+          }
+
+          // Auswertung der Muttermundöffnung
+          evaluateCervixOpening(opening) {
+            // Geöffneter Muttermund deutet auf fruchtbare Phase hin
+            switch (opening) {
+              case 'OPEN':
+                return 0.9; // Deutet stark auf fruchtbare Phase hin
+              case 'SLIGHTLY_OPEN':
+                return 0.6; // Mittlere Wahrscheinlichkeit
+              case 'CLOSED':
+                return 0.1; // Geringe Wahrscheinlichkeit
+              default:
+                return 0;
+            }
+          }
+
+          // Auswertung der Gebärmutterhalsfestigkeit
+          evaluateCervixFirmness(firmness) {
+            // Weicher Gebärmutterhals deutet auf fruchtbare Phase hin
+            switch (firmness) {
+              case 'SOFT':
+                return 0.9; // Deutet stark auf fruchtbare Phase hin
+              case 'MEDIUM':
+                return 0.5; // Mittlere Wahrscheinlichkeit
+              case 'FIRM':
+                return 0.1; // Geringe Wahrscheinlichkeit
+              default:
+                return 0;
+            }
+          }
+
+          // Auswertung von Symptomen
+          evaluateSymptoms(entry) {
+            let symptomsScore = 0;
+            let symptomCount = 0;
+
+            // Brustgefühl - kann auf hormonelle Veränderungen hindeuten
+            if (entry.breastFeeling) {
+              switch (entry.breastFeeling) {
+                case 'SENSITIVE':
+                  symptomsScore += 0.6; // Empfindlichkeit kann Eisprung andeuten
+                  symptomCount++;
+                  break;
+                case 'TENSE':
+                  symptomsScore += 0.5; // Spannen kann auf hormonelle Veränderungen hindeuten
+                  symptomCount++;
+                  break;
+                case 'PAINFUL':
+                case 'VERY_PAINFUL':
+                  symptomsScore += 0.4; // Schmerzen oft eher nach dem Eisprung
+                  symptomCount++;
+                  break;
+              }
+            }
+
+            // Stimmung - hormonbedingte Stimmungsschwankungen
+            if (entry.moodValue !== undefined) {
+              // Extreme Stimmungen können hormonelle Schwankungen andeuten
+              const normalizedMood = Math.abs(entry.moodValue - 5) / 5;
+              if (normalizedMood > 0.6) {
+                symptomsScore += 0.3;
+                symptomCount++;
+              }
+            }
+
+            // Mittelschmerz - spezifisch für Eisprung
+            if (entry.mittleschmerz) {
+              symptomsScore += 0.8; // Starker Indikator für Eisprung
+              symptomCount++;
+            }
+
+            // Kopfschmerzen - können je nach Zyklusphase auftreten
+            if (entry.headacheIntensity > 5) {
+              symptomsScore += 0.3;
+              symptomCount++;
+            }
+
+            // Normalisiere Score basierend auf Anzahl berücksichtigter Symptome
+            return symptomCount > 0 ? symptomsScore / symptomCount : 0;
+          }
+
+          // Finde Tag mit höchstem Score
+          findHighestScoringDay(dailyScores) {
+            if (dailyScores.length === 0) return null;
+
+            return dailyScores.reduce((highest, current) => {
+              return current.score > highest.score ? current : highest;
+            }, dailyScores[0]);
+          }
+
+          // Berechne Konfidenz der Vorhersage
+          calculateConfidence(allEntries, entriesInWindow, predictedDay) {
+            if (!predictedDay) return 0;
+
+            // Faktoren für die Konfidenzberechnung
+            let confidenceScore = 0;
+
+            // 1. Qualität der Daten (Anzahl der berücksichtigten Faktoren)
+            if (predictedDay.factorsConsidered >= 3) {
+              confidenceScore += 0.3;
+            } else if (predictedDay.factorsConsidered >= 1) {
+              confidenceScore += 0.15;
+            }
+
+            // 2. Höhe des Score
+            confidenceScore += predictedDay.score * 0.4;
+
+            // 3. Datenmenge im gesamten Zyklus
+            const dataPoints = Math.min(entriesInWindow.length / 3, 1) * 0.2;
+            confidenceScore += dataPoints;
+
+            // 4. Historische Genauigkeit (für zukünftige Implementierung)
+            // Hier könnte eine Auswertung vergangener Vorhersagen stattfinden
+
+            // Limitiere die Konfidenz auf maximal 95%
+            return Math.min(confidenceScore, 0.95);
+          }
+        }
+
+        // Hauptdatenmodell für die App
+        class CycleTrackerModel {
+          constructor() {
+            this.currentUser = {
+              entries: [], // Tageseinträge
+              cycles: [],  // Zyklusdaten
+              settings: {  // Benutzereinstellungen
+                theme: 'default',
+                notifications: true,
+                backupInterval: 7,
+                maxBackups: 30,
+                customParameters: []
+              },
+              backups: []  // Backup-Historie
+            };
+
+            this.predictor = new OvulationPredictor(this.currentUser);
+            this.currentDate = new Date();
+            this.selectedDate = new Date();
+
+            // Lade Daten beim Start
+            this.loadData();
+          }
+
+          // Speichert alle Daten in localStorage
+          saveData() {
+            try {
+              localStorage.setItem('meinZyklus_userData', JSON.stringify(this.currentUser));
+              return true;
+            } catch (error) {
+              console.error('Fehler beim Speichern der Daten:', error);
+              return false;
+            }
+          }
+
+          // Lädt Daten aus localStorage
+          loadData() {
+            try {
+              const savedData = localStorage.getItem('meinZyklus_userData');
+              if (savedData) {
+                this.currentUser = JSON.parse(savedData);
+                // Stelle sicher, dass alle erwarteten Objekte existieren
+                if (!this.currentUser.entries) this.currentUser.entries = [];
+                if (!this.currentUser.cycles) this.currentUser.cycles = [];
+                if (!this.currentUser.settings) {
+                  this.currentUser.settings = {
+                    theme: 'default',
+                    notifications: true,
+                    backupInterval: 7,
+                    maxBackups: 30,
+                    customParameters: []
+                  };
+                }
+                if (!this.currentUser.backups) this.currentUser.backups = [];
+
+                // Aktualisiere Predictor mit geladenen Daten
+                this.predictor = new OvulationPredictor(this.currentUser);
+                return true;
+              }
+              return false;
+            } catch (error) {
+              console.error('Fehler beim Laden der Daten:', error);
+              return false;
+            }
+          }
+
+          // Erstellt ein neues Backup
+          createBackup() {
+            const now = new Date();
+            const backupData = JSON.stringify(this.currentUser);
+            const backupInfo = {
+              date: now.toISOString(),
+              size: backupData.length,
+              data: backupData
+            };
+
+            // Füge neues Backup hinzu
+            this.currentUser.backups.unshift(backupInfo);
+
+            // Begrenze Anzahl der Backups
+            if (this.currentUser.backups.length > this.currentUser.settings.maxBackups) {
+              this.currentUser.backups = this.currentUser.backups.slice(
+                0, this.currentUser.settings.maxBackups
+              );
+            }
+
+            // Speichere aktualisierte Daten
+            this.saveData();
+            return backupInfo;
+          }
+
+          // Stellt ein Backup wieder her
+          restoreBackup(backupIndex) {
+            try {
+              if (backupIndex >= 0 && backupIndex < this.currentUser.backups.length) {
+                const backup = this.currentUser.backups[backupIndex];
+                const backupData = JSON.parse(backup.data);
+
+                // Sichere Einstellungen
+                const currentSettings = { ...this.currentUser.settings };
+                const currentBackups = [...this.currentUser.backups];
+
+                // Stelle Backup-Daten wieder her
+                this.currentUser = backupData;
+
+                // Setze Einstellungen und Backups zurück
+                this.currentUser.settings = currentSettings;
+                this.currentUser.backups = currentBackups;
+
+                // Aktualisiere Predictor
+                this.predictor = new OvulationPredictor(this.currentUser);
+
+                // Speichere Änderungen
+                this.saveData();
+                return true;
+              }
+              return false;
+            } catch (error) {
+              console.error('Fehler beim Wiederherstellen des Backups:', error);
+              return false;
+            }
+          }
+
+          // Exportiert Daten im JSON-Format
+          exportDataAsJson() {
+            try {
+              // Erstelle tiefe Kopie der Daten, ohne Backups
+              const exportData = JSON.parse(JSON.stringify(this.currentUser));
+              delete exportData.backups;
+
+              const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                type: 'application/json'
+              });
+
+              return {
+                blob: blob,
+                filename: `MeinZyklus_Export_${this.formatDate(new Date())}.json`
+              };
+            } catch (error) {
+              console.error('Fehler beim Exportieren der Daten:', error);
+              return null;
+            }
+          }
+
+          // Exportiert Daten im CSV-Format
+          exportDataAsCsv() {
+            try {
+              // Erstelle Kopfzeile für CSV
+              let csvContent = 'Datum,Zyklustag,Periode,Temperatur,Schleim,Gebärmutterhals,Mittelschmerz,Geschlechtsverkehr,Stimmung,Gewicht,Medikamente,Nahrungsergänzung,Notizen,Brustgefühl';
+
+              // Füge benutzerdefinierte Parameter zur Kopfzeile hinzu
+              if (this.currentUser.settings.customParameters.length > 0) {
+                this.currentUser.settings.customParameters.forEach(param => {
+                  csvContent += `,${param.name}`;
+                });
+              }
+              csvContent += '\n';
+
+              // Konvertiere Einträge in CSV-Zeilen
+              const sortedEntries = [...this.currentUser.entries].sort((a, b) =>
+                new Date(a.date) - new Date(b.date)
+              );
+
+              sortedEntries.forEach(entry => {
+                const entryDate = new Date(entry.date);
+                const cycleDay = this.getCycleDayForDate(entryDate);
+
+                // Formatiere CSV-Zeile
+                let line = [
+                  entry.date,
+                  cycleDay,
+                  entry.flow || '',
+                  entry.temperature || '',
+                  entry.cervicalMucus || '',
+                  entry.cervixPosition ? `${entry.cervixPosition}/${entry.cervixOpening}/${entry.cervixFirmness}` : '',
+                  entry.mittleschmerz ? 'Ja' : '',
+                  entry.intercourse ? 'Ja' : '',
+                  entry.moodValue !== undefined ? entry.moodValue : '',
+                  entry.weight || '',
+                  entry.medication || '',
+                  entry.supplements ? entry.supplements.join(', ') : '',
+                  this.sanitizeCsvField(entry.notes || ''),
+                  entry.breastFeeling || ''
+                ];
+
+                // Füge benutzerdefinierte Parameter hinzu
+                if (this.currentUser.settings.customParameters.length > 0) {
+                  this.currentUser.settings.customParameters.forEach(param => {
+                    const paramValue = entry.customParameters && entry.customParameters[param.id]
+                      ? this.sanitizeCsvField(entry.customParameters[param.id].toString())
+                      : '';
+                    line.push(paramValue);
+                  });
+                }
+
+                csvContent += line.join(',') + '\n';
+              });
+
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+
+              return {
+                blob: blob,
+                filename: `MeinZyklus_Export_${this.formatDate(new Date())}.csv`
+              };
+            } catch (error) {
+              console.error('Fehler beim Exportieren der Daten als CSV:', error);
+              return null;
+            }
+          }
+
+          // Hilfsfunktion zum Bereinigen eines CSV-Feldes
+          sanitizeCsvField(value) {
+            // Wenn Feld Kommas oder Zeilenumbrüche enthält, in Anführungszeichen setzen
+            if (value && (value.includes(',') || value.includes('\n') || value.includes('"'))) {
+              // Anführungszeichen im Text verdoppeln (CSV-Escaping)
+              return `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+          }
+
+          // Importiert Daten aus einer JSON-Datei
+          importDataFromJson(jsonString) {
+            try {
+              const importedData = JSON.parse(jsonString);
+
+              // Validiere importierte Daten
+              if (!importedData.entries || !Array.isArray(importedData.entries)) {
+                throw new Error('Ungültiges Datenformat: Einträge fehlen oder haben falsches Format');
+              }
+
+              // Erstelle Backup vor Import
+              this.createBackup();
+
+              // Importiere Einträge
+              this.currentUser.entries = importedData.entries;
+
+              // Importiere Zyklen, falls vorhanden
+              if (importedData.cycles && Array.isArray(importedData.cycles)) {
+                this.currentUser.cycles = importedData.cycles;
+              } else {
+                // Regeneriere Zyklusdaten aus Einträgen, falls Zyklen fehlen
+                this.regenerateCyclesFromEntries();
+              }
+
+              // Importiere Einstellungen, falls vorhanden, behalte aber Backup-Einstellungen
+              if (importedData.settings) {
+                const backupSettings = {
+                  backupInterval: this.currentUser.settings.backupInterval,
+                  maxBackups: this.currentUser.settings.maxBackups
+                };
+
+                this.currentUser.settings = {
+                  ...importedData.settings,
+                  ...backupSettings
+                };
+              }
+
+              // Aktualisiere Predictor
+              this.predictor = new OvulationPredictor(this.currentUser);
+
+              // Speichere importierte Daten
+              this.saveData();
+
+              return {
+                success: true,
+                message: `Import erfolgreich: ${importedData.entries.length} Einträge importiert.`
+              };
+            } catch (error) {
+              console.error('Fehler beim Importieren von JSON-Daten:', error);
+              return {
+                success: false,
+                message: `Fehler beim Import: ${error.message}`
+              };
+            }
+          }
+
+          // Importiert Daten aus einer CSV-Datei
+          importDataFromCsv(csvString) {
+            try {
+              // Teile CSV-String in Zeilen
+              const lines = csvString.split('\n');
+              if (lines.length < 2) {
+                throw new Error('CSV-Datei enthält zu wenige Zeilen');
+              }
+
+              // Parse Header
+              const header = this.parseCSVLine(lines[0]);
+              const requiredColumns = ['Datum'];
+
+              // Prüfe, ob mindestens die Datumsspalte vorhanden ist
+              if (!header.includes('Datum')) {
+                throw new Error('CSV-Datei enthält keine Datumsspalte');
+              }
+
+              // Erstelle Backup vor Import
+              this.createBackup();
+
+              // Parse Daten
+              const newEntries = [];
+
+              for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue; // Überspringe leere Zeilen
+
+                const values = this.parseCSVLine(lines[i]);
+                if (values.length < header.length) continue; // Überspringe unvollständige Zeilen
+
+                // Erstelle Eintrag-Objekt
+                const entry = { customParameters: {} };
+
+                // Mappe Werte zu Eigenschaften
+                header.forEach((colName, index) => {
+                  const value = values[index] || '';
+
+                  switch (colName) {
+                    case 'Datum':
+                      entry.date = value;
+                      break;
+                    case 'Periode':
+                      if (value) entry.flow = value;
+                      break;
+                    case 'Temperatur':
+                      if (value) entry.temperature = value;
+                      break;
+                    case 'Schleim':
+                      if (value) entry.cervicalMucus = value;
+                      break;
+                    case 'Mittelschmerz':
+                      entry.mittleschmerz = value === 'Ja';
+                      break;
+                    case 'Geschlechtsverkehr':
+                      entry.intercourse = value === 'Ja';
+                      break;
+                    case 'Stimmung':
+                      if (value !== '') entry.moodValue = parseInt(value, 10);
+                      break;
+                    case 'Gewicht':
+                      if (value) entry.weight = value;
+                      break;
+                    case 'Medikamente':
+                      if (value) entry.medication = value;
+                      break;
+                    case 'Notizen':
+                      if (value) entry.notes = value;
+                      break;
+                    case 'Brustgefühl':
+                      if (value) entry.breastFeeling = value;
+                      break;
+                    default:
+                      // Suche nach benutzerdefinierten Parametern
+                      const customParam = this.currentUser.settings.customParameters.find(
+                        p => p.name === colName
+                      );
+
+                      if (customParam && value) {
+                        entry.customParameters[customParam.id] = value;
+                      }
+                  }
+                });
+
+                // Füge gültigen Eintrag hinzu
+                if (entry.date) {
+                  // Prüfe, ob Eintrag für dieses Datum bereits existiert
+                  const existingIndex = this.currentUser.entries.findIndex(
+                    e => e.date === entry.date
+                  );
+
+                  if (existingIndex >= 0) {
+                    // Aktualisiere existierenden Eintrag
+                    this.currentUser.entries[existingIndex] = {
+                      ...this.currentUser.entries[existingIndex],
+                      ...entry
+                    };
+                  } else {
+                    // Füge neuen Eintrag hinzu
+                    newEntries.push(entry);
+                  }
+                }
+              }
+
+              // Füge neue Einträge hinzu
+              this.currentUser.entries = [...this.currentUser.entries, ...newEntries];
+
+              // Regeneriere Zyklusdaten
+              this.regenerateCyclesFromEntries();
+
+              // Aktualisiere Predictor
+              this.predictor = new OvulationPredictor(this.currentUser);
+
+              // Speichere importierte Daten
+              this.saveData();
+
+              return {
+                success: true,
+                message: `Import erfolgreich: ${newEntries.length} neue Einträge importiert.`
+              };
+            } catch (error) {
+              console.error('Fehler beim Importieren von CSV-Daten:', error);
+              return {
+                success: false,
+                message: `Fehler beim Import: ${error.message}`
+              };
+            }
+          }
+
+          // Hilfsfunktion zum Parsen einer CSV-Zeile unter Berücksichtigung von Anführungszeichen
+          parseCSVLine(line) {
+            const result = [];
+            let inQuotes = false;
+            let currentValue = '';
+
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+
+              if (char === '"') {
+                if (inQuotes && i+1 < line.length && line[i+1] === '"') {
+                  // Doppelte Anführungszeichen werden zu einem
+                  currentValue += '"';
+                  i++; // Überspringe nächstes Zeichen
+                } else {
+                  // Umschalten des Anführungszeichen-Modus
+                  inQuotes = !inQuotes;
+                }
+              } else if (char === ',' && !inQuotes) {
+                // Ende eines Feldes
+                result.push(currentValue);
+                currentValue = '';
+              } else {
+                // Normales Zeichen
+                currentValue += char;
+              }
+            }
+
+            // Letztes Feld hinzufügen
+            result.push(currentValue);
+
+            return result;
+          }
+
+          // Erzeugt Zyklusdaten neu aus vorhandenen Einträgen
+          regenerateCyclesFromEntries() {
+            // Sortiere Einträge nach Datum
+            const sortedEntries = [...this.currentUser.entries].sort(
+              (a, b) => new Date(a.date) - new Date(b.date)
+            );
+
+            // Finde alle Perioden-Startdaten
+            const periodStartDates = [];
+            let inPeriod = false;
+
+            sortedEntries.forEach(entry => {
+              if (entry.flow && entry.flow !== 'NONE') {
+                if (!inPeriod) {
+                  periodStartDates.push(entry.date);
+                  inPeriod = true;
+                }
+              } else {
+                inPeriod = false;
+              }
+            });
+
+            // Erzeuge Zyklen aus Periodendaten
+            this.currentUser.cycles = periodStartDates.map((startDate, index) => {
+              return {
+                startDate: startDate,
+                endDate: index < periodStartDates.length - 1 ?
+                  periodStartDates[index + 1] : null
+              };
+            });
+          }
+
+          // Hilfsfunktion zur Formatierung eines Datums als String
+          formatDate(date) {
+            return date.toISOString().split('T')[0];
+          }
+
+          // Ermittelt Zyklustag für ein bestimmtes Datum
+          getCycleDayForDate(date) {
+            if (!date) return null;
+
+            const dateStr = this.formatDate(date);
+            const cycles = [...this.currentUser.cycles].sort(
+              (a, b) => new Date(b.startDate) - new Date(a.startDate)
+            );
+
+            for (const cycle of cycles) {
+              if (dateStr >= cycle.startDate) {
+                // Berechne Differenz in Tagen
+                const cycleStart = new Date(cycle.startDate);
+                const targetDate = new Date(dateStr);
+                const diffTime = Math.abs(targetDate - cycleStart);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                return diffDays;
+              }
+            }
+
+            return null;
+          }
+
+          // Ruft Eintrag für ein bestimmtes Datum ab oder erstellt einen neuen
+          getEntryForDate(date) {
+            const dateStr = this.formatDate(date);
+            let entry = this.currentUser.entries.find(e => e.date === dateStr);
+
+            if (!entry) {
+              entry = { date: dateStr };
+            }
+
+            return entry;
+          }
+
+          // Speichert einen Eintrag für ein bestimmtes Datum
+          saveEntryForDate(date, entryData) {
+            const dateStr = this.formatDate(date);
+            const existingIndex = this.currentUser.entries.findIndex(e => e.date === dateStr);
+
+            if (existingIndex >= 0) {
+              // Aktualisiere existierenden Eintrag
+              this.currentUser.entries[existingIndex] = {
+                ...this.currentUser.entries[existingIndex],
+                ...entryData
+              };
+            } else {
+              // Erstelle neuen Eintrag
+              const newEntry = {
+                date: dateStr,
+                ...entryData
+              };
+              this.currentUser.entries.push(newEntry);
+            }
+
+            // Wenn Periodenfluss aktualisiert wurde, Zyklen aktualisieren
+            if (entryData.flow !== undefined) {
+              this.updateCycles(dateStr, entryData.flow);
+            }
+
+            // Daten speichern
+            this.saveData();
+
+            // Rückgabe des aktualisierten/neuen Eintrags
+            return this.getEntryForDate(date);
+          }
+
+          // Aktualisiert Zyklusdaten basierend auf Periodenfluss
+          updateCycles(dateStr, flow) {
+            if (flow && flow !== 'NONE') {
+              // Prüfe, ob Datum bereits Teil eines Zyklus ist
+              const existingCycle = this.currentUser.cycles.find(
+                cycle => dateStr === cycle.startDate
+              );
+
+              if (!existingCycle) {
+                // Prüfe, ob im Bereich von 1-2 Tagen bereits ein Zyklusbeginn existiert
+                const nearbyStart = this.findNearbyCycleStart(dateStr, 2);
+
+                if (nearbyStart) {
+                  // Wenn ein nahes Startdatum gefunden wurde, aktualisiere es
+                  const cycleIndex = this.currentUser.cycles.findIndex(
+                    cycle => cycle.startDate === nearbyStart
+                  );
+                  if (cycleIndex >= 0) {
+                    this.currentUser.cycles[cycleIndex].startDate = dateStr;
+                  }
+                } else {
+                  // Erstelle neuen Zyklus
+                  this.currentUser.cycles.push({
+                    startDate: dateStr,
+                    endDate: null
+                  });
+
+                  // Aktualisiere Enddatum des vorherigen Zyklus
+                  this.updatePreviousCycleEnd(dateStr);
+                }
+              }
+            }
+
+            // Sortiere Zyklen nach Startdatum
+            this.currentUser.cycles.sort(
+              (a, b) => new Date(a.startDate) - new Date(b.startDate)
+            );
+          }
+
+          // Findet nahes Zyklusstartdatum
+          findNearbyCycleStart(dateStr, maxDays) {
+            const targetDate = new Date(dateStr);
+
+            for (const cycle of this.currentUser.cycles) {
+              const cycleStart = new Date(cycle.startDate);
+              const diffTime = Math.abs(targetDate - cycleStart);
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+              if (diffDays <= maxDays) {
+                return cycle.startDate;
+              }
+            }
+
+            return null;
+          }
+
+          // Aktualisiert Enddatum des vorherigen Zyklus
+          updatePreviousCycleEnd(newCycleStart) {
+            // Finde früheres Startdatum
+            const earlierCycles = this.currentUser.cycles.filter(
+              cycle => cycle.startDate < newCycleStart
+            ).sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+
+            if (earlierCycles.length > 0) {
+              const previousCycle = earlierCycles[0];
+              const cycleIndex = this.currentUser.cycles.findIndex(
+                cycle => cycle.startDate === previousCycle.startDate
+              );
+
+              if (cycleIndex >= 0) {
+                this.currentUser.cycles[cycleIndex].endDate = newCycleStart;
+              }
+            }
+          }
+
+          // Analysiert den aktuellen Zyklus
+          analyzeCurrentCycle() {
+            return this.predictor.analyzeCurrentCycle();
+          }
+
+          // Berechnet verschiedene Statistiken
+          calculateStatistics() {
+            // Sortiere Zyklen nach Startdatum
+            const sortedCycles = [...this.currentUser.cycles].sort(
+              (a, b) => new Date(a.startDate) - new Date(b.startDate)
+            );
+
+            // Berechne Zykluslängen
+            const cycleLengths = [];
+            for (let i = 0; i < sortedCycles.length - 1; i++) {
+              const start = new Date(sortedCycles[i].startDate);
+              const end = new Date(sortedCycles[i+1].startDate);
+              const days = Math.round((end - start) / (1000 * 60 * 60 * 24));
+
+              // Ignoriere unplausible Längen (z.B. durch fehlende Daten)
+              if (days >= 20 && days <= 45) {
+                cycleLengths.push(days);
+              }
+            }
+
+            // Berechne Periodenlängen
+            const periodLengths = [];
+            for (const cycle of sortedCycles) {
+              const periodEntries = this.currentUser.entries.filter(entry => {
+                // Finde Einträge im aktuellen Zyklus mit Periodenfluss
+                if (entry.date < cycle.startDate) return false;
+                if (cycle.endDate && entry.date >= cycle.endDate) return false;
+                return entry.flow && entry.flow !== 'NONE';
+              });
+
+              if (periodEntries.length > 0) {
+                periodLengths.push(periodEntries.length);
+              }
+            }
+
+            // Berechne häufigste Symptome
+            const symptomCount = {};
+            this.currentUser.entries.forEach(entry => {
+              // Zähle verschiedene Symptomtypen
+              if (entry.headacheIntensity > 3) {
+                symptomCount['Kopfschmerzen'] = (symptomCount['Kopfschmerzen'] || 0) + 1;
+              }
+              if (entry.breastFeeling && entry.breastFeeling !== 'NONE') {
+                symptomCount['Brustbeschwerden'] = (symptomCount['Brustbeschwerden'] || 0) + 1;
+              }
+              if (entry.mittleschmerz) {
+                symptomCount['Mittelschmerz'] = (symptomCount['Mittelschmerz'] || 0) + 1;
+              }
+              if (entry.moodValue !== undefined && (entry.moodValue <= 2 || entry.moodValue >= 8)) {
+                symptomCount['Stimmungsschwankungen'] = (symptomCount['Stimmungsschwankungen'] || 0) + 1;
+              }
+            });
+
+            // Sortiere Symptome nach Häufigkeit
+            const topSymptoms = Object.entries(symptomCount)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3)
+              .map(([name, count]) => ({ name, count }));
+
+            // Liste der letzten Zyklen
+            const recentCycles = sortedCycles.slice(-3).reverse().map(cycle => {
+              const start = new Date(cycle.startDate);
+              let length = null;
+
+              if (cycle.endDate) {
+                const end = new Date(cycle.endDate);
+                length = Math.round((end - start) / (1000 * 60 * 60 * 24));
+              }
+
+              return {
+                startDate: cycle.startDate,
+                length: length
+              };
+            });
+
+            return {
+              avgCycleLength: cycleLengths.length > 0 ?
+                Math.round(cycleLengths.reduce((a, b) => a + b, 0) / cycleLengths.length) : null,
+              minCycleLength: cycleLengths.length > 0 ? Math.min(...cycleLengths) : null,
+              maxCycleLength: cycleLengths.length > 0 ? Math.max(...cycleLengths) : null,
+              avgPeriodLength: periodLengths.length > 0 ?
+                Math.round(periodLengths.reduce((a, b) => a + b, 0) / periodLengths.length) : null,
+              topSymptoms: topSymptoms,
+              recentCycles: recentCycles
+            };
+          }
+
+          // Löscht alle Daten (Zurücksetzen)
+          resetAllData() {
+            // Erstelle Backup vor dem Zurücksetzen
+            this.createBackup();
+
+            // Setze Daten zurück
+            this.currentUser = {
+              entries: [],
+              cycles: [],
+              settings: {
+                theme: 'default',
+                notifications: true,
+                backupInterval: 7,
+                maxBackups: 30,
+                customParameters: []
+              },
+              backups: this.currentUser.backups // Behalte Backups
+            };
+
+            // Aktualisiere Predictor
+            this.predictor = new OvulationPredictor(this.currentUser);
+
+            // Speichere zurückgesetzte Daten
+            this.saveData();
+
+            return true;
+          }
+
+          // Erstellt einen neuen benutzerdefinierten Parameter
+          createCustomParameter(paramData) {
+            const newParam = {
+              id: 'param_' + Date.now(),
+              name: paramData.name,
+              type: paramData.type,
+              options: paramData.options || [],
+              created: new Date().toISOString()
+            };
+
+            this.currentUser.settings.customParameters.push(newParam);
+            this.saveData();
+
+            return newParam;
+          }
+
+          // Aktualisiert einen benutzerdefinierten Parameter
+          updateCustomParameter(paramId, paramData) {
+            const paramIndex = this.currentUser.settings.customParameters.findIndex(
+              p => p.id === paramId
+            );
+
+            if (paramIndex >= 0) {
+              this.currentUser.settings.customParameters[paramIndex] = {
+                ...this.currentUser.settings.customParameters[paramIndex],
+                ...paramData
+              };
+
+              this.saveData();
+              return true;
+            }
+
+            return false;
+          }
+
+          // Löscht einen benutzerdefinierten Parameter
+          deleteCustomParameter(paramId) {
+            const initialLength = this.currentUser.settings.customParameters.length;
+            this.currentUser.settings.customParameters =
+              this.currentUser.settings.customParameters.filter(p => p.id !== paramId);
+
+            // Lösche auch alle Einträge mit diesem Parameter
+            this.currentUser.entries.forEach(entry => {
+              if (entry.customParameters && entry.customParameters[paramId]) {
+                delete entry.customParameters[paramId];
+              }
+            });
+
+            this.saveData();
+            return this.currentUser.settings.customParameters.length < initialLength;
+          }
+
+          // Hilfsfunktion zum Konvertieren vom Flow-Enum zum numerischen Wert
+          mapFlowEnumToValue(flow) {
+            switch(flow) {
+              case 'NONE': return 0;
+              case 'SPOTTING': return 1;
+              case 'LIGHT': return 2;
+              case 'MEDIUM': return 3;
+              case 'HEAVY': return 4;
+              default: return 0;
+            }
+          }
+
+          // Hilfsfunktion zum Konvertieren vom numerischen Wert zum Flow-Enum
+          mapFlowValueToEnum(value) {
+            switch(value) {
+              case 0: return 'NONE';
+              case 1: return 'SPOTTING';
+              case 2: return 'LIGHT';
+              case 3: return 'MEDIUM';
+              case 4: return 'HEAVY';
+              default: return 'NONE';
+            }
+          }
+
+          // Hilfsfunktion um Flow-Enum in lesbaren Text zu konvertieren
+          getFlowLabel(flow) {
+            switch(flow) {
+              case 'NONE': return 'Keine';
+              case 'SPOTTING': return 'Spotting';
+              case 'LIGHT': return 'Leicht';
+              case 'MEDIUM': return 'Mittel';
+              case 'HEAVY': return 'Stark';
+              default: return '';
+            }
+          }
+
+          // Hilfsfunktion um Flow-Wert in Symbol zu konvertieren
+          getFlowSymbol(flow) {
+            switch(flow) {
+              case 'SPOTTING': return '🩸₁';
+              case 'LIGHT': return '🩸₂';
+              case 'MEDIUM': return '🩸₃';
+              case 'HEAVY': return '🩸₄';
+              default: return '';
+            }
+          }
+
+          // Hilfsfunktion um Flow-Wert in Farbe zu konvertieren
+          getFlowColor(value) {
+            switch(value) {
+              case 0: return '#ffcdd2';
+              case 1: return '#ef9a9a';
+              case 2: return '#e57373';
+              case 3: return '#ef5350';
+              case 4: return '#c62828';
+              default: return '#ffcdd2';
+            }
+          }
+
+          // Hilfsfunktion um Schleim-Enum in lesbaren Text zu konvertieren
+          getMucusLabel(mucusType) {
+            switch(mucusType) {
+              case 'DRY': return 'Trocken';
+              case 'STICKY': return 'Klebrig';
+              case 'CREAMY': return 'Cremig';
+              case 'WATERY': return 'Wässrig';
+              case 'EGG_WHITE': return 'Spinnbar';
+              default: return '';
+            }
+          }
+
+          // Hilfsfunktion um Brustgefühl-Enum in lesbaren Text zu konvertieren
+          getBreastFeelingLabel(feeling) {
+            switch(feeling) {
+              case 'NONE': return 'Keine Beschwerden';
+              case 'SENSITIVE': return 'Empfindlich';
+              case 'TENSE': return 'Spannt';
+              case 'PAINFUL': return 'Schmerzt';
+              case 'VERY_PAINFUL': return 'Sehr schmerzhaft';
+              default: return '';
+            }
+          }
+        }
+
+        // UI-Controller für die App
+        class CycleTrackerUI {
+          constructor(model) {
+            this.model = model;
+            this.initUI();
+            this.refreshUI();
+          }
+
+          // Initialisiert die Benutzeroberfläche und Event-Listener
+          initUI() {
+            // Tab-Navigation
+            document.querySelectorAll('.tab').forEach(tab => {
+              tab.addEventListener('click', () => {
+                this.switchTab(tab.dataset.tab);
+              });
+            });
+
+            // Datumswechsel auf der Heute-Seite
+            document.getElementById('prevDay').addEventListener('click', () => {
+              this.changeSelectedDate(-1);
+            });
+
+            document.getElementById('nextDay').addEventListener('click', () => {
+              this.changeSelectedDate(1);
+            });
+
+            // Monatswechsel im Kalender
+            document.getElementById('prevMonth').addEventListener('click', () => {
+              this.changeSelectedMonth(-1);
+            });
+
+            document.getElementById('nextMonth').addEventListener('click', () => {
+              this.changeSelectedMonth(1);
+            });
+
+            // Dialog-Schließen-Buttons
+            document.querySelectorAll('.dialog-close').forEach(button => {
+              button.addEventListener('click', (e) => {
+                const dialog = e.target.closest('.form-dialog');
+                if (dialog) {
+                  this.closeDialog(dialog.id);
+                }
+              });
+            });
+
+            // Tägliche Quest-Items
+            document.querySelectorAll('.quest-item').forEach(item => {
+              item.addEventListener('click', () => {
+                this.openDialog(`${item.dataset.type}Dialog`);
+              });
+            });
+
+            // Speichern-Buttons für Dialoge
+            this.initDialogSaveButtons();
+
+            // Einstellungs-Tab Aktionen
+            this.initSettingsTabActions();
+
+            // Interaktive Steuerelemente in Dialogen
+            this.initInteractiveControls();
+          }
+
+          // Initialisiert alle Speichern-Buttons in Dialogen
+          initDialogSaveButtons() {
+            // Periode speichern
+            document.getElementById('savePeriodBtn').addEventListener('click', () => {
+              const flowValue = document.getElementById('periodValue').textContent;
+              const flow = this.model.mapFlowValueToEnum(parseInt(flowValue, 10));
+
+              const entry = this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { flow: flow }
+              );
+
+              this.closeDialog('periodDialog');
+              this.showConfetti();
+              this.refreshUI();
+            });
+
+            // Temperatur speichern
+            document.getElementById('saveTemperatureBtn').addEventListener('click', () => {
+              const temperature = document.getElementById('temperatureValue').textContent.split(' ')[0];
+
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { temperature: temperature }
+              );
+
+              this.closeDialog('temperatureDialog');
+              this.refreshUI();
+            });
+
+            // Gebärmutterhals speichern
+            document.getElementById('saveCervixBtn').addEventListener('click', () => {
+              const position = document.querySelector('input[name="cervixPosition"]:checked')?.value || 'MEDIUM';
+              const opening = document.querySelector('input[name="cervixOpening"]:checked')?.value || 'SLIGHTLY_OPEN';
+              const firmness = document.querySelector('input[name="cervixFirmness"]:checked')?.value || 'MEDIUM';
+
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                {
+                  cervixPosition: position,
+                  cervixOpening: opening,
+                  cervixFirmness: firmness
+                }
+              );
+
+              this.closeDialog('cervixDialog');
+              this.refreshUI();
+            });
+
+            // Mittelschmerz speichern
+            document.getElementById('mittleschmerzYesBtn').addEventListener('click', () => {
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { mittleschmerz: true }
+              );
+
+              this.closeDialog('mittleschmerzDialog');
+              this.refreshUI();
+            });
+
+            document.getElementById('mittleschmerzNoBtn').addEventListener('click', () => {
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { mittleschmerz: false }
+              );
+
+              this.closeDialog('mittleschmerzDialog');
+              this.refreshUI();
+            });
+
+            // Geschlechtsverkehr speichern
+            document.getElementById('intercourseYesBtn').addEventListener('click', () => {
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { intercourse: true }
+              );
+
+              this.closeDialog('intercourseDialog');
+              this.refreshUI();
+            });
+
+            document.getElementById('intercourseNoBtn').addEventListener('click', () => {
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { intercourse: false }
+              );
+
+              this.closeDialog('intercourseDialog');
+              this.refreshUI();
+            });
+
+            // Medikamente speichern
+            document.getElementById('saveMedicationBtn').addEventListener('click', () => {
+              const medication = document.getElementById('medicationText').value.trim();
+
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { medication: medication }
+              );
+
+              this.closeDialog('medicationDialog');
+              this.refreshUI();
+            });
+
+            // Gewicht speichern
+            document.getElementById('saveWeightBtn').addEventListener('click', () => {
+              const weight = document.getElementById('weightInput').value;
+
+              if (weight) {
+                this.model.saveEntryForDate(
+                  this.model.selectedDate,
+                  { weight: weight }
+                );
+              }
+
+              this.closeDialog('weightDialog');
+              this.refreshUI();
+            });
+
+            // Stimmung speichern
+            document.getElementById('saveMoodBtn').addEventListener('click', () => {
+              const moodValue = parseInt(document.getElementById('moodSlider').value, 10);
+
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { moodValue: moodValue }
+              );
+
+              this.closeDialog('moodDialog');
+              this.refreshUI();
+            });
+
+            // Notizen speichern
+            document.getElementById('saveNotesBtn').addEventListener('click', () => {
+              const notes = document.getElementById('notesText').value.trim();
+
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { notes: notes }
+              );
+
+              this.closeDialog('notesDialog');
+              this.refreshUI();
+            });
+
+            // Schleim speichern
+            document.getElementById('saveMucusBtn').addEventListener('click', () => {
+              const selectedOption = document.querySelector('.mucus-option.selected');
+              if (selectedOption) {
+                const mucusType = selectedOption.dataset.value;
+
+                this.model.saveEntryForDate(
+                  this.model.selectedDate,
+                  { cervicalMucus: mucusType, mucusAmount: 'MEDIUM' }
+                );
+              }
+
+              this.closeDialog('mucusDialog');
+              this.refreshUI();
+            });
+
+            // Kopfschmerzen speichern
+            document.getElementById('savePainBtn').addEventListener('click', () => {
+              const intensity = parseInt(document.getElementById('headacheSlider').value, 10);
+
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { headacheIntensity: intensity }
+              );
+
+              this.closeDialog('painDialog');
+              this.refreshUI();
+            });
+
+            // Nahrungsergänzungsmittel speichern
+            document.getElementById('saveSupplementsBtn').addEventListener('click', () => {
+              const supplementItems = [];
+              document.querySelectorAll('#supplementsList .grocery-item').forEach(item => {
+                supplementItems.push(item.querySelector('span').textContent);
+              });
+
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { supplements: supplementItems }
+              );
+
+              this.closeDialog('supplementsDialog');
+              this.refreshUI();
+            });
+
+            // Brustgefühl speichern
+            document.getElementById('saveBreastBtn').addEventListener('click', () => {
+              const breastFeeling = document.querySelector('input[name="breastFeeling"]:checked').value;
+
+              this.model.saveEntryForDate(
+                this.model.selectedDate,
+                { breastFeeling: breastFeeling }
+              );
+
+              this.closeDialog('breastDialog');
+              this.refreshUI();
+            });
+          }
+
+          // Initialisiert Aktionen im Einstellungs-Tab
+          initSettingsTabActions() {
+            // Neuer benutzerdefinierter Parameter
+            document.getElementById('newCustomParameter').addEventListener('click', () => {
+              this.showCustomParameterDialog();
+            });
+
+            // Manuelles Backup erstellen
+            document.getElementById('createBackup').addEventListener('click', () => {
+              const backup = this.model.createBackup();
+              this.refreshBackupHistory();
+              this.showNotification(`Backup vom ${this.formatDateLocale(new Date(backup.date))} erstellt.`);
+            });
+
+            // Daten als JSON exportieren
+            document.getElementById('exportDataJson').addEventListener('click', () => {
+              const exportData = this.model.exportDataAsJson();
+              if (exportData) {
+                this.downloadFile(exportData.blob, exportData.filename);
+              } else {
+                this.showNotification('Fehler beim Exportieren der Daten.', 'error');
+              }
+            });
+
+            // Daten als CSV exportieren
+            document.getElementById('exportDataCsv').addEventListener('click', () => {
+              const exportData = this.model.exportDataAsCsv();
+              if (exportData) {
+                this.downloadFile(exportData.blob, exportData.filename);
+              } else {
+                this.showNotification('Fehler beim Exportieren der Daten.', 'error');
+              }
+            });
+
+            // Datenimport
+            document.getElementById('importData').addEventListener('click', () => {
+              const fileInput = document.getElementById('importFile');
+              const file = fileInput.files[0];
+
+              if (!file) {
+                this.showNotification('Bitte wähle eine Datei aus.', 'error');
+                return;
+              }
+
+              const reader = new FileReader();
+
+              reader.onload = (e) => {
+                const fileContent = e.target.result;
+                let importResult;
+
+                if (file.name.endsWith('.json')) {
+                  importResult = this.model.importDataFromJson(fileContent);
+                } else if (file.name.endsWith('.csv')) {
+                  importResult = this.model.importDataFromCsv(fileContent);
+                } else {
+                  this.showNotification('Unbekanntes Dateiformat. Bitte wähle eine JSON- oder CSV-Datei.', 'error');
+                  return;
+                }
+
+                if (importResult.success) {
+                  this.showNotification(importResult.message, 'success');
+                  this.refreshUI();
+                } else {
+                  this.showNotification(importResult.message, 'error');
+                }
+              };
+
+              reader.onerror = () => {
+                this.showNotification('Fehler beim Lesen der Datei.', 'error');
+              };
+
+              if (file.name.endsWith('.json')) {
+                reader.readAsText(file);
+              } else if (file.name.endsWith('.csv')) {
+                reader.readAsText(file);
+              } else {
+                this.showNotification('Bitte wähle eine JSON- oder CSV-Datei.', 'error');
+              }
+            });
+
+            // Automatisches Backup-Setup
+            document.getElementById('autoBackupEnabled').addEventListener('change', (e) => {
+              this.model.currentUser.settings.autoBackup.enabled = e.target.checked;
+              this.model.saveData();
+            });
+
+            document.getElementById('backupInterval').addEventListener('change', (e) => {
+              const value = parseInt(e.target.value, 10);
+              if (value >= 1 && value <= 90) {
+                this.model.currentUser.settings.autoBackup.interval = value;
+                this.model.saveData();
+              }
+            });
+
+            document.getElementById('maxBackupsCount').addEventListener('change', (e) => {
+              const value = parseInt(e.target.value, 10);
+              if (value >= 5 && value <= 100) {
+                this.model.currentUser.settings.autoBackup.maxBackups = value;
+                this.model.saveData();
+              }
+            });
+
+            // Daten zurücksetzen
+            document.getElementById('resetData').addEventListener('click', () => {
+              if (confirm('Bist du sicher, dass du alle Daten löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+                if (this.model.resetAllData()) {
+                  this.showNotification('Alle Daten wurden gelöscht.', 'success');
+                  this.refreshUI();
+                } else {
+                  this.showNotification('Fehler beim Zurücksetzen der Daten.', 'error');
+                }
+              }
+            });
+
+            // Benachrichtigungen schließen
+            document.getElementById('notificationClose').addEventListener('click', () => {
+              document.getElementById('notificationBanner').classList.add('hidden');
+            });
+          }
+
+          // Initialisiert interaktive Steuerelemente in Dialogen
+          initInteractiveControls() {
+            // Perioden-Stärke-Slider
+            const periodSliderThumb = document.getElementById('periodSliderThumb');
+            const periodValue = document.getElementById('periodValue');
+            const bloodDrop = document.getElementById('bloodDrop');
+
+            if (periodSliderThumb && periodValue) {
+              let periodDragging = false;
+
+              const updatePeriodSlider = (clientX) => {
+                const track = document.querySelector('.blood-drop-slider .slider-track');
+                const rect = track.getBoundingClientRect();
+                let position = (clientX - rect.left) / rect.width;
+                position = Math.max(0, Math.min(1, position));
+
+                const value = Math.round(position * 4);
+
+                periodSliderThumb.style.left = `${position * 100}%`;
+                periodValue.style.left = `${position * 100}%`;
+                periodValue.textContent = value;
+
+                // Aktualisiere Blutstropfen-Animation
+                bloodDrop.style.fill = this.model.getFlowColor(value);
+
+                // Verschiebe Blutstropfen-Animation
+                const dropAnimation = document.querySelector('.blood-drop-animation');
+                dropAnimation.style.left = `${position * 100}%`;
+              };
+
+              periodSliderThumb.addEventListener('mousedown', (e) => {
+                periodDragging = true;
+                updatePeriodSlider(e.clientX);
+                e.preventDefault();
+              });
+
+              document.addEventListener('mousemove', (e) => {
+                if (periodDragging) {
+                  updatePeriodSlider(e.clientX);
+                }
+              });
+
+              document.addEventListener('mouseup', () => {
+                periodDragging = false;
+              });
+
+              // Touch-Unterstützung
+              periodSliderThumb.addEventListener('touchstart', (e) => {
+                periodDragging = true;
+                updatePeriodSlider(e.touches[0].clientX);
+                e.preventDefault();
+              });
+
+              document.addEventListener('touchmove', (e) => {
+                if (periodDragging) {
+                  updatePeriodSlider(e.touches[0].clientX);
+                }
+              });
+
+              document.addEventListener('touchend', () => {
+                periodDragging = false;
+              });
+            }
+
+            // Temperatur-Slider
+            const temperatureSlider = document.getElementById('temperatureSlider');
+            const temperatureValue = document.getElementById('temperatureValue');
+
+            if (temperatureSlider && temperatureValue) {
+              temperatureSlider.addEventListener('input', () => {
+                temperatureValue.textContent = `${temperatureSlider.value} °C`;
+              });
+            }
+
+            // Stimmungs-Slider mit Smiley
+            const moodSlider = document.getElementById('moodSlider');
+            const mouthShape = document.getElementById('mouthShape');
+
+            if (moodSlider && mouthShape) {
+              moodSlider.addEventListener('input', () => {
+                const value = parseInt(moodSlider.value, 10);
+                // Transformiere Mund von Traurig (180 Grad) über Neutral (90 Grad) bis Glücklich (0 Grad)
+                const rotation = 180 - (value * 20);
+                mouthShape.style.transform = `rotate(${rotation}deg)`;
+              });
+            }
+
+            // Kopfschmerz-Slider mit Animation
+            const headacheSlider = document.getElementById('headacheSlider');
+            const headacheValue = document.getElementById('headacheValue');
+            const woodpecker = document.getElementById('woodpecker');
+
+            if (headacheSlider && headacheValue) {
+              headacheSlider.addEventListener('input', () => {
+                const value = parseInt(headacheSlider.value, 10);
+                const descriptions = [
+                  '0 - Keine Schmerzen',
+                  '1 - Sehr leicht',
+                  '2 - Leicht',
+                  '3 - Mild',
+                  '4 - Mäßig',
+                  '5 - Mittelschwer',
+                  '6 - Stark',
+                  '7 - Sehr stark',
+                  '8 - Extrem stark',
+                  '9 - Unerträglich',
+                  '10 - Maximum'
+                ];
+
+                headacheValue.textContent = descriptions[value];
+
+                // Animiere Specht basierend auf Intensität
+                if (woodpecker) {
+                  if (value > 5) {
+                    woodpecker.style.animationDuration = `${0.5 - (value - 5) * 0.05}s`;
+                  } else {
+                    woodpecker.style.animationDuration = '1s';
+                  }
+                }
+              });
+            }
+
+            // Nahrungsergänzungsmittel-Liste
+            const supplementInput = document.getElementById('supplementInput');
+            const addSupplementBtn = document.getElementById('addSupplementBtn');
+            const supplementsList = document.getElementById('supplementsList');
+
+            if (supplementInput && addSupplementBtn && supplementsList) {
+              const addSupplement = () => {
+                const supplement = supplementInput.value.trim();
+                if (supplement) {
+                  const item = document.createElement('div');
+                  item.className = 'grocery-item';
+                  item.innerHTML = `
+                    <span>${supplement}</span>
+                    <button type="button" class="secondary remove-supplement">x</button>
+                  `;
+                  supplementsList.appendChild(item);
+                  supplementInput.value = '';
+
+                  // Event-Listener für Entfernen-Button
+                  item.querySelector('.remove-supplement').addEventListener('click', () => {
+                    supplementsList.removeChild(item);
+                  });
+                }
+              };
+
+              addSupplementBtn.addEventListener('click', addSupplement);
+              supplementInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                  addSupplement();
+                  e.preventDefault();
+                }
+              });
+            }
+
+            // Zervixschleim-Optionen
+            const mucusOptions = document.querySelectorAll('.mucus-option');
+
+            mucusOptions.forEach(option => {
+              option.addEventListener('click', () => {
+                // Entferne 'selected' von allen Optionen
+                mucusOptions.forEach(opt => opt.classList.remove('selected'));
+                // Füge 'selected' zur angeklickten Option hinzu
+                option.classList.add('selected');
+              });
+            });
+          }
+
+          // Hilfsfunktion zum Formatieren eines Datums für die Anzeige
+          formatDateLocale(date) {
+            return date.toLocaleDateString('de-DE', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            });
+          }
+
+          // Hilfsfunktion zum Herunterladen einer Datei
+          downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }
+
+          // Zeigt eine Benachrichtigung an
+          showNotification(message, type = 'info') {
+            const banner = document.getElementById('notificationBanner');
+            const text = document.getElementById('notificationText');
+
+            banner.className = 'notification-banner';
+            if (type === 'error') {
+              banner.style.backgroundColor = '#f8d7da';
+              banner.style.borderColor = '#f5c6cb';
+              banner.style.color = '#721c24';
+            } else if (type === 'success') {
+              banner.style.backgroundColor = '#d4edda';
+              banner.style.borderColor = '#c3e6cb';
+              banner.style.color = '#155724';
+            } else {
+              banner.style.backgroundColor = '#fff3cd';
+              banner.style.borderColor = '#ffeeba';
+              banner.style.color = '#856404';
+            }
+
+            text.textContent = message;
+            banner.classList.remove('hidden');
+
+            // Automatisches Ausblenden nach 5 Sekunden
+            setTimeout(() => {
+              banner.classList.add('hidden');
+            }, 5000);
+          }
+
+          // Zeigt Konfetti-Animation an
+          showConfetti() {
+            const container = document.getElementById('confettiContainer');
+            container.innerHTML = '';
+            container.style.display = 'block';
+
+            // Erstelle Konfetti-Partikel
+            const colors = ['#ff6b6b', '#ff9e7d', '#ffcc8e', '#ffc076', '#ffb8b8'];
+
+            for (let i = 0; i < 100; i++) {
+              const confetti = document.createElement('div');
+              confetti.className = 'confetti';
+              confetti.style.left = `${Math.random() * 100}%`;
+              confetti.style.width = `${Math.random() * 10 + 5}px`;
+              confetti.style.height = `${Math.random() * 10 + 5}px`;
+              confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+              confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+              confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+
+              container.appendChild(confetti);
+            }
+
+            // Verstecke Konfetti nach Animation
+            setTimeout(() => {
+              container.style.display = 'none';
+            }, 5000);
+          }
+
+          // Wechselt zwischen Tabs
+          switchTab(tabId) {
+            // Entferne 'active' von allen Tabs und Inhalten
+            document.querySelectorAll('.tab').forEach(tab => {
+              tab.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-content').forEach(content => {
+              content.classList.remove('active');
+            });
+
+            // Setze 'active' für ausgewählten Tab und Inhalt
+            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            // Aktualisiere Tab-spezifische Inhalte
+            if (tabId === 'kalender') {
+              this.renderCalendar();
+            } else if (tabId === 'statistik') {
+              this.renderStatistics();
+            } else if (tabId === 'einstellungen') {
+              this.refreshBackupHistory();
+              this.renderCustomParameters();
+            }
+          }
+
+          // Aktualisiert die Backup-Historie
+          refreshBackupHistory() {
+            const backupHistory = this.model.currentUser.backups;
+            const container = document.getElementById('backupHistory');
+            container.innerHTML = '';
+
+            if (backupHistory.length === 0) {
+              container.innerHTML = '<div class="backup-item"><span class="backup-date">Keine Backups vorhanden</span></div>';
+              return;
+            }
+
+            backupHistory.forEach((backup, index) => {
+              const date = new Date(backup.date);
+              const formattedDate = this.formatDateLocale(date);
+              const timeStr = date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+              const item = document.createElement('div');
+              item.className = 'backup-item';
+              item.innerHTML = `
+                <span class="backup-date">${formattedDate} ${timeStr}</span>
+                <div>
+                  <button class="restore-backup" data-index="${index}">Wiederherstellen</button>
+                  <button class="delete-backup" data-index="${index}">Löschen</button>
+                </div>
+              `;
+
+              container.appendChild(item);
+            });
+
+            // Event-Listener für Backup-Aktionen
+            document.querySelectorAll('.restore-backup').forEach(button => {
+              button.addEventListener('click', () => {
+                const index = parseInt(button.dataset.index, 10);
+                if (confirm('Möchtest du dieses Backup wirklich wiederherstellen? Alle aktuellen Daten werden überschrieben.')) {
+                  if (this.model.restoreBackup(index)) {
+                    this.showNotification('Backup erfolgreich wiederhergestellt!', 'success');
+                    this.refreshUI();
+                  } else {
+                    this.showNotification('Fehler beim Wiederherstellen des Backups.', 'error');
+                  }
+                }
+              });
+            });
+
+            document.querySelectorAll('.delete-backup').forEach(button => {
+              button.addEventListener('click', () => {
+                const index = parseInt(button.dataset.index, 10);
+                if (confirm('Möchtest du dieses Backup wirklich löschen?')) {
+                  // Entferne Backup aus der Liste
+                  this.model.currentUser.backups.splice(index, 1);
+                  this.model.saveData();
+                  this.refreshBackupHistory();
+                  this.showNotification('Backup erfolgreich gelöscht!', 'success');
+                }
+              });
+            });
+          }
+
+          // Rendert benutzerdefinierte Parameter in den Einstellungen
+          renderCustomParameters() {
+            const container = document.getElementById('customParametersContainer');
+            const infoElement = document.getElementById('noCustomParametersInfo');
+            const parameters = this.model.currentUser.settings.customParameters;
+
+            // Leere Container
+            container.innerHTML = '';
+
+            if (parameters.length === 0) {
+              infoElement.style.display = 'block';
+              return;
+            }
+
+            infoElement.style.display = 'none';
+
+            // Erstelle für jeden Parameter ein Element
+            parameters.forEach(param => {
+              const paramElement = document.createElement('div');
+              paramElement.className = 'custom-parameter-item';
+
+              let typeText = '';
+              switch (param.type) {
+                case 'text': typeText = 'Text'; break;
+                case 'number': typeText = 'Zahl'; break;
+                case 'boolean': typeText = 'Ja/Nein'; break;
+                case 'select': typeText = 'Auswahl'; break;
+                default: typeText = param.type;
+              }
+
+              paramElement.innerHTML = `
+                <div>
+                  <div class="custom-parameter-name">${param.name}</div>
+                  <div class="custom-parameter-type">${typeText}</div>
+                </div>
+                <div class="custom-parameter-actions">
+                  <button class="edit-parameter" data-id="${param.id}">Bearbeiten</button>
+                  <button class="delete-parameter" data-id="${param.id}">Löschen</button>
+                </div>
+              `;
+
+              container.appendChild(paramElement);
+            });
+
+            // Event-Listener für Parameter-Aktionen
+            document.querySelectorAll('.edit-parameter').forEach(button => {
+              button.addEventListener('click', () => {
+                const paramId = button.dataset.id;
+                const param = this.model.currentUser.settings.customParameters.find(p => p.id === paramId);
+
+                if (param) {
+                  this.showCustomParameterDialog(param);
+                }
+              });
+            });
+
+            document.querySelectorAll('.delete-parameter').forEach(button => {
+              button.addEventListener('click', () => {
+                const paramId = button.dataset.id;
+                const param = this.model.currentUser.settings.customParameters.find(p => p.id === paramId);
+
+                if (param && confirm(`Möchtest du den Parameter "${param.name}" wirklich löschen?`)) {
+                  if (this.model.deleteCustomParameter(paramId)) {
+                    this.showNotification(`Parameter "${param.name}" wurde gelöscht.`, 'success');
+                    this.renderCustomParameters();
+                  } else {
+                    this.showNotification('Fehler beim Löschen des Parameters.', 'error');
+                  }
+                }
+              });
+            });
+          }
+
+          // Zeigt Dialog zum Erstellen/Bearbeiten eines benutzerdefinierten Parameters
+          showCustomParameterDialog(existingParam = null) {
+            // Wenn ein solcher Dialog bereits existiert, entferne ihn
+            const existingDialog = document.getElementById('customParameterDialog');
+            if (existingDialog) {
+              document.body.removeChild(existingDialog);
+            }
+
+            // Erstelle neuen Dialog
+            const dialog = document.createElement('div');
+            dialog.className = 'form-dialog';
+            dialog.id = 'customParameterDialog';
+            dialog.style.display = 'flex';
+
+            // Vorbereite Werte für den Dialog
+            const isEdit = existingParam !== null;
+            const title = isEdit ? 'Parameter bearbeiten' : 'Neuer Parameter';
+            const nameValue = isEdit ? existingParam.name : '';
+            const typeValue = isEdit ? existingParam.type : 'text';
+            let optionsMarkup = '';
+
+            // Optionen für Auswahl-Typ hinzufügen
+            if (typeValue === 'select') {
+              optionsMarkup = `
+                <div class="form-group option-controls" ${typeValue !== 'select' ? 'style="display: none;"' : ''}>
+                  <label>Optionen:</label>
+                  <div class="option-list" id="parameterOptionsList">
+                    ${isEdit && existingParam.options ? existingParam.options.map(option => `
+                      <div class="parameter-option">
+                        <span>${option.text}</span>
+                        <button type="button" class="delete-option" data-value="${option.value}">×</button>
+                      </div>
+                    `).join('') : ''}
+                  </div>
+                  <div class="grocery-input-container">
+                    <input type="text" id="newOptionText" placeholder="Neue Option">
+                    <button type="button" id="addOptionBtn" class="secondary">Hinzufügen</button>
+                  </div>
+                </div>
+              `;
+            }
+
+            // Einheitenfeld für Zahlen-Typ hinzufügen
+            let unitMarkup = '';
+            if (typeValue === 'number') {
+              unitMarkup = `
+                <div class="form-group unit-control" ${typeValue !== 'number' ? 'style="display: none;"' : ''}>
+                  <label>Einheit (optional):</label>
+                  <input type="text" id="parameterUnit" placeholder="z.B. kg, ml, etc." value="${isEdit && existingParam.unit ? existingParam.unit : ''}">
+                </div>
+              `;
+            }
+
+            // Dialog-Inhalt
+            dialog.innerHTML = `
+              <div class="dialog-content">
+                <div class="dialog-header">
+                  <h3 class="dialog-title">${title}</h3>
+                  <button class="dialog-close">&times;</button>
+                </div>
+                <form id="customParameterForm">
+                  <div class="form-group">
+                    <label for="parameterName">Name:</label>
+                    <input type="text" id="parameterName" value="${nameValue}" required placeholder="z.B. Schlafqualität">
+                  </div>
+                  <div class="form-group">
+                    <label for="parameterType">Typ:</label>
+                    <select id="parameterType">
+                      <option value="text" ${typeValue === 'text' ? 'selected' : ''}>Text</option>
+                      <option value="number" ${typeValue === 'number' ? 'selected' : ''}>Zahl</option>
+                      <option value="boolean" ${typeValue === 'boolean' ? 'selected' : ''}>Ja/Nein</option>
+                      <option value="select" ${typeValue === 'select' ? 'selected' : ''}>Auswahl</option>
+                    </select>
+                  </div>
+                  ${unitMarkup}
+                  ${optionsMarkup}
+                  <div class="button-container">
+                    <button type="submit" id="saveParameterBtn">${isEdit ? 'Aktualisieren' : 'Erstellen'}</button>
+                  </div>
+                </form>
+              </div>
+            `;
+
+            document.body.appendChild(dialog);
+
+            // Event-Listener für Dialog
+            document.querySelector('#customParameterDialog .dialog-close').addEventListener('click', () => {
+              document.body.removeChild(dialog);
+            });
+
+            // Parameter-Typ ändern
+            const typeSelect = document.getElementById('parameterType');
+            if (typeSelect) {
+              typeSelect.addEventListener('change', () => {
+                const selectedType = typeSelect.value;
+
+                // Optionen-Steuerung anzeigen/verstecken
+                const optionControls = dialog.querySelector('.option-controls');
+                if (optionControls) {
+                  optionControls.style.display = selectedType === 'select' ? 'block' : 'none';
+                }
+
+                // Einheiten-Steuerung anzeigen/verstecken
+                const unitControl = dialog.querySelector('.unit-control');
+                if (unitControl) {
+                  unitControl.style.display = selectedType === 'number' ? 'block' : 'none';
+                }
+              });
+            }
+
+            // Option hinzufügen
+            const addOptionBtn = document.getElementById('addOptionBtn');
+            if (addOptionBtn) {
+              addOptionBtn.addEventListener('click', () => {
+                const optionText = document.getElementById('newOptionText').value.trim();
+
+                if (optionText) {
+                  const optionsList = document.getElementById('parameterOptionsList');
+                  const optionValue = Date.now().toString(); // Eindeutiger Wert
+
+                  const optionElement = document.createElement('div');
+                  optionElement.className = 'parameter-option';
+                  optionElement.innerHTML = `
+                    <span>${optionText}</span>
+                    <button type="button" class="delete-option" data-value="${optionValue}">×</button>
+                  `;
+
+                  optionsList.appendChild(optionElement);
+                  document.getElementById('newOptionText').value = '';
+
+                  // Event-Listener für Löschen-Button
+                  optionElement.querySelector('.delete-option').addEventListener('click', (e) => {
+                    optionsList.removeChild(optionElement);
+                  });
+                }
+              });
+            }
+
+            // Bestehende Optionen löschen
+            document.querySelectorAll('.delete-option').forEach(button => {
+              button.addEventListener('click', () => {
+                const optionElement = button.closest('.parameter-option');
+                if (optionElement) {
+                  optionElement.remove();
+                }
+              });
+            });
+
+            // Formular absenden
+            document.getElementById('customParameterForm').addEventListener('submit', (e) => {
+              e.preventDefault();
+
+              const name = document.getElementById('parameterName').value.trim();
+              const type = document.getElementById('parameterType').value;
+
+              if (!name) {
+                this.showNotification('Bitte gib einen Namen für den Parameter ein.', 'error');
+                return;
+              }
+
+              // Parameteroptionen sammeln
+              let options = [];
+              if (type === 'select') {
+                const optionElements = document.querySelectorAll('.parameter-option');
+
+                if (optionElements.length === 0) {
+                  this.showNotification('Bitte füge mindestens eine Option hinzu.', 'error');
+                  return;
+                }
+
+                optionElements.forEach(element => {
+                  const text = element.querySelector('span').textContent;
+                  const value = element.querySelector('.delete-option').dataset.value;
+                  options.push({ text, value });
+                });
+              }
+
+              // Einheit für Zahlen-Typ
+              let unit = '';
+              if (type === 'number') {
+                unit = document.getElementById('parameterUnit')?.value || '';
+              }
+
+              const paramData = {
+                name,
+                type,
+                options: type === 'select' ? options : [],
+                unit: type === 'number' ? unit : ''
+              };
+
+              if (isEdit) {
+                // Parameter aktualisieren
+                if (this.model.updateCustomParameter(existingParam.id, paramData)) {
+                  this.showNotification(`Parameter "${name}" wurde aktualisiert.`, 'success');
+                } else {
+                  this.showNotification('Fehler beim Aktualisieren des Parameters.', 'error');
+                }
+              } else {
+                // Neuen Parameter erstellen
+                const newParam = this.model.createCustomParameter(paramData);
+                if (newParam) {
+                  this.showNotification(`Parameter "${name}" wurde erstellt.`, 'success');
+                } else {
+                  this.showNotification('Fehler beim Erstellen des Parameters.', 'error');
+                }
+              }
+
+              // Dialog schließen und UI aktualisieren
+              document.body.removeChild(dialog);
+              this.renderCustomParameters();
+            });
+          }
+
+          // Ändert das ausgewählte Datum auf der Heute-Seite
+          changeSelectedDate(days) {
+            const newDate = new Date(this.model.selectedDate);
+            newDate.setDate(newDate.getDate() + days);
+            this.model.selectedDate = newDate;
+            this.refreshUI();
+          }
+
+          // Ändert den ausgewählten Monat im Kalender
+          changeSelectedMonth(months) {
+            const currentMonth = this.model.selectedDate.getMonth();
+            const currentYear = this.model.selectedDate.getFullYear();
+
+            const newDate = new Date(this.model.selectedDate);
+            newDate.setMonth(currentMonth + months);
+
+            this.model.selectedDate = newDate;
+            this.renderCalendar();
+          }
+
+          // Öffnet einen Dialog
+          openDialog(dialogId) {
+            // Aktuelles Datum für den Eintrag festlegen
+            const dateString = this.model.formatDate(this.model.selectedDate);
+
+            // Finde existierenden Eintrag oder erstelle einen neuen
+            const entry = this.model.getEntryForDate(this.model.selectedDate);
+
+            // Dialog-spezifische Vorbereitung
+            switch (dialogId) {
+              case 'periodDialog':
+                this.setupPeriodDialog(entry);
+                break;
+              case 'temperatureDialog':
+                this.setupTemperatureDialog(entry);
+                break;
+              case 'cervixDialog':
+                this.setupCervixDialog(entry);
+                break;
+              case 'mittleschmerzDialog':
+                this.setupMittleschmerzDialog(entry);
+                break;
+              case 'intercourseDialog':
+                this.setupIntercourseDialog(entry);
+                break;
+              case 'medicationDialog':
+                this.setupMedicationDialog(entry);
+                break;
+              case 'weightDialog':
+                this.setupWeightDialog(entry);
+                break;
+              case 'moodDialog':
+                this.setupMoodDialog(entry);
+                break;
+              case 'notesDialog':
+                this.setupNotesDialog(entry);
+                break;
+              case 'mucusDialog':
+                this.setupMucusDialog(entry);
+                break;
+              case 'painDialog':
+                this.setupPainDialog(entry);
+                break;
+              case 'supplementsDialog':
+                this.setupSupplementsDialog(entry);
+                break;
+              case 'breastDialog':
+                this.setupBreastDialog(entry);
+                break;
+            }
+
+            // Dialog öffnen
+            document.getElementById(dialogId).style.display = 'flex';
+          }
+
+          // Schließt einen Dialog
+          closeDialog(dialogId) {
+            const dialog = document.getElementById(dialogId);
+            if (dialog) {
+              dialog.style.display = 'none';
+            }
+          }
+
+          // Dialog-Setup-Funktionen
+          setupPeriodDialog(entry) {
+            const periodValue = entry.flow ? this.model.mapFlowEnumToValue(entry.flow) : 0;
+            const bloodDrop = document.getElementById('bloodDrop');
+            const periodSliderThumb = document.getElementById('periodSliderThumb');
+            const periodValueElement = document.getElementById('periodValue');
+
+            // Setze Slider-Position
+            const position = periodValue / 4;
+            periodSliderThumb.style.left = `${position * 100}%`;
+            periodValueElement.style.left = `${position * 100}%`;
+            periodValueElement.textContent = periodValue;
+
+            // Setze Farbe des Blutstropfens
+            bloodDrop.setAttribute('fill', this.model.getFlowColor(periodValue));
+
+            // Positioniere Blutstropfen-Animation
+            const dropAnimation = document.querySelector('.blood-drop-animation');
+            dropAnimation.style.left = `${position * 100}%`;
+          }
+
+          setupTemperatureDialog(entry) {
+            const temperatureSlider = document.getElementById('temperatureSlider');
+            const temperatureValue = document.getElementById('temperatureValue');
+
+            // Setze Temperaturwert
+            temperatureSlider.value = entry.temperature || 36.5;
+            temperatureValue.textContent = `${temperatureSlider.value} °C`;
+          }
+
+          setupCervixDialog(entry) {
+            // Setze Position
+            const position = entry.cervixPosition || 'MEDIUM';
+            document.querySelector(`input[name="cervixPosition"][value="${position}"]`).checked = true;
+
+            // Setze Öffnung
+            const opening = entry.cervixOpening || 'SLIGHTLY_OPEN';
+            document.querySelector(`input[name="cervixOpening"][value="${opening}"]`).checked = true;
+
+            // Setze Festigkeit
+            const firmness = entry.cervixFirmness || 'MEDIUM';
+            document.querySelector(`input[name="cervixFirmness"][value="${firmness}"]`).checked = true;
+          }
+
+          setupMittleschmerzDialog(entry) {
+            // Keine spezielle Vorbereitung erforderlich
+          }
+
+          setupIntercourseDialog(entry) {
+            // Keine spezielle Vorbereitung erforderlich
+          }
+
+          setupMedicationDialog(entry) {
+            document.getElementById('medicationText').value = entry.medication || '';
+          }
+
+          setupWeightDialog(entry) {
+            document.getElementById('weightInput').value = entry.weight || '';
+          }
+
+          setupMoodDialog(entry) {
+            const moodSlider = document.getElementById('moodSlider');
+            const mouthShape = document.getElementById('mouthShape');
+
+            // Setze Stimmungswert
+            const moodValue = entry.moodValue !== undefined ? entry.moodValue : 5;
+            moodSlider.value = moodValue;
+
+            // Aktualisiere Smiley
+            const rotation = 180 - (moodValue * 20);
+            mouthShape.style.transform = `rotate(${rotation}deg)`;
+          }
+
+          setupNotesDialog(entry) {
+            document.getElementById('notesText').value = entry.notes || '';
+          }
+
+          setupMucusDialog(entry) {
+            // Entferne 'selected' von allen Optionen
+            document.querySelectorAll('.mucus-option').forEach(option => {
+              option.classList.remove('selected');
+            });
+
+            // Setze vorhandene Auswahl, falls vorhanden
+            if (entry.cervicalMucus) {
+              const option = document.querySelector(`.mucus-option[data-value="${entry.cervicalMucus}"]`);
+              if (option) {
+                option.classList.add('selected');
+              }
+            }
+          }
+
+          setupPainDialog(entry) {
+            const headacheSlider = document.getElementById('headacheSlider');
+            const headacheValue = document.getElementById('headacheValue');
+            const woodpecker = document.getElementById('woodpecker');
+
+            // Setze Kopfschmerzwert
+            const painValue = entry.headacheIntensity || 0;
+            headacheSlider.value = painValue;
+
+            // Aktualisiere Beschreibung
+            const descriptions = [
+              '0 - Keine Schmerzen',
+              '1 - Sehr leicht',
+              '2 - Leicht',
+              '3 - Mild',
+              '4 - Mäßig',
+              '5 - Mittelschwer',
+              '6 - Stark',
+              '7 - Sehr stark',
+              '8 - Extrem stark',
+              '9 - Unerträglich',
+              '10 - Maximum'
+            ];
+            headacheValue.textContent = descriptions[painValue];
+
+            // Aktualisiere Specht-Animation
+            if (painValue === 0) {
+              woodpecker.style.display = 'none';
+            } else {
+              woodpecker.style.display = 'block';
+              if (painValue > 5) {
+                woodpecker.style.animationDuration = `${0.5 - (painValue - 5) * 0.05}s`;
+              } else {
+                woodpecker.style.animationDuration = '1s';
+              }
+            }
+          }
+
+          setupSupplementsDialog(entry) {
+            const supplementsList = document.getElementById('supplementsList');
+            supplementsList.innerHTML = '';
+
+            // Zeige gespeicherte Supplemente an
+            if (entry.supplements && entry.supplements.length > 0) {
+              entry.supplements.forEach(supplement => {
+                const item = document.createElement('div');
+                item.className = 'grocery-item';
+                item.innerHTML = `
+                  <span>${supplement}</span>
+                  <button type="button" class="secondary remove-supplement">x</button>
+                `;
+                supplementsList.appendChild(item);
+
+                // Event-Listener für Entfernen-Button
+                item.querySelector('.remove-supplement').addEventListener('click', () => {
+                  supplementsList.removeChild(item);
+                });
+              });
+            } else {
+              supplementsList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Keine Nahrungsergänzungsmittel eingetragen</div>';
+            }
+          }
+
+          setupBreastDialog(entry) {
+            // Setze Brustgefühl
+            const feeling = entry.breastFeeling || 'NONE';
+            document.querySelector(`input[name="breastFeeling"][value="${feeling}"]`).checked = true;
+          }
+
+          // Aktualisiert das Datum auf der Quest-Seite
+          updateQuestDate() {
+            const date = this.model.selectedDate;
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = date.toLocaleDateString('de-DE', options);
+
+            // Teile Datum in Wochentag und restlichen Teil
+            const parts = dateString.split(', ');
+            const weekday = parts[0];
+            const dayMonth = parts.slice(1).join(', ');
+
+            document.getElementById('questDate').textContent = dayMonth;
+            document.getElementById('questDay').textContent = weekday;
+
+            // Aktualisiere die visuellen Indikatoren in den Quest-Items
+            this.updateQuestItemIndicators();
+          }
+
+          // Aktualisiert die Indikatoren in den Quest-Items basierend auf den vorhandenen Daten
+          updateQuestItemIndicators() {
+            const entry = this.model.getEntryForDate(this.model.selectedDate);
+
+            // Zurücksetzen aller Indikatoren
+            document.querySelectorAll('.quest-icon').forEach(icon => {
+              icon.classList.remove('filled');
+            });
+
+            if (!entry) return;
+
+            // Periode
+            if (entry.flow && entry.flow !== 'NONE') {
+              document.querySelector('[data-type="period"] .quest-icon').classList.add('filled');
+            }
+
+            // Temperatur
+            if (entry.temperature) {
+              document.querySelector('[data-type="temperature"] .quest-icon').classList.add('filled');
+            }
+
+            // Schleim
+            if (entry.cervicalMucus) {
+              document.querySelector('[data-type="mucus"] .quest-icon').classList.add('filled');
+            }
+
+            // Gebärmutterhals
+            if (entry.cervixPosition) {
+              document.querySelector('[data-type="cervix"] .quest-icon').classList.add('filled');
+            }
+
+            // Mittelschmerz
+            if (entry.mittleschmerz) {
+              document.querySelector('[data-type="mittleschmerz"] .quest-icon').classList.add('filled');
+            }
+
+            // Geschlechtsverkehr
+            if (entry.intercourse) {
+              document.querySelector('[data-type="intercourse"] .quest-icon').classList.add('filled');
+            }
+
+            // Nahrungsergänzungsmittel
+            if (entry.supplements && entry.supplements.length > 0) {
+              document.querySelector('[data-type="supplements"] .quest-icon').classList.add('filled');
+            }
+
+            // Medikamente
+            if (entry.medication) {
+              document.querySelector('[data-type="medication"] .quest-icon').classList.add('filled');
+            }
+
+            // Stimmung
+            if (entry.moodValue !== undefined) {
+              document.querySelector('[data-type="mood"] .quest-icon').classList.add('filled');
+            }
+
+            // Kopfschmerzen
+            if (entry.headacheIntensity !== undefined) {
+              document.querySelector('[data-type="pain"] .quest-icon').classList.add('filled');
+            }
+
+            // Gewicht
+            if (entry.weight) {
+              document.querySelector('[data-type="weight"] .quest-icon').classList.add('filled');
+            }
+
+            // Notizen
+            if (entry.notes) {
+              document.querySelector('[data-type="notes"] .quest-icon').classList.add('filled');
+            }
+
+            // Brustgefühl
+            if (entry.breastFeeling && entry.breastFeeling !== 'NONE') {
+              document.querySelector('[data-type="breast"] .quest-icon').classList.add('filled');
+            }
+          }
+
+          // Aktualisiert das Zyklusrad auf der Hauptseite
+          updateCycleWheel() {
+            const cycleData = this.model.analyzeCurrentCycle();
+            const phaseIndicator = document.getElementById('phaseIndicator');
+            const cycleDay = document.getElementById('cycleDay');
+            const cyclePhase = document.getElementById('cyclePhase');
+            const nextPeriod = document.getElementById('nextPeriod');
+
+            if (!cycleData) {
+              // Keine Zyklusdaten vorhanden
+              cycleDay.textContent = 'Tag --';
+              cyclePhase.textContent = 'Keine Daten';
+              nextPeriod.textContent = '--';
+              return;
+            }
+
+            // Berechne aktuellen Zyklustag
+            const currentCycleDayNum = this.model.getCycleDayForDate(this.model.currentDate);
+            cycleDay.textContent = currentCycleDayNum ? `Tag ${currentCycleDayNum}` : 'Tag --';
+
+            // Bestimme aktuelle Zyklusphase
+            let phase = 'Follikelphase';
+            let phaseColor = '#ffcdd2'; // Hellrot für Follikelphase
+
+            // Berechne Tage bis zur nächsten Periode
+            if (cycleData.expectedPeriodDate) {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+
+              const expectedDate = new Date(cycleData.expectedPeriodDate);
+              expectedDate.setHours(0, 0, 0, 0);
+
+              const diffTime = Math.abs(expectedDate - today);
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+              nextPeriod.textContent = diffDays;
+
+              // Aktuelle Phase basierend auf Vorhersage und Tag
+              if (currentCycleDayNum) {
+                if (currentCycleDayNum <= 5) {
+                  phase = 'Menstruation';
+                  phaseColor = '#f48fb1'; // Rosa für Menstruation
+                } else if (cycleData.fertileWindow &&
+                         new Date() >= new Date(cycleData.fertileWindow.start) &&
+                         new Date() <= new Date(cycleData.fertileWindow.end)) {
+                  phase = 'Fruchtbare Phase';
+                  phaseColor = '#ffc076'; // Orange für fruchtbare Phase
+
+                  // Prüfe, ob heute der vorhergesagte Eisprung ist
+                  if (cycleData.predictedOvulationDate &&
+                      this.model.formatDate(new Date()) === cycleData.predictedOvulationDate) {
+                    phase = 'Eisprung';
+                    phaseColor = '#ffcc8e'; // Gelb für Eisprung
+                  }
+                } else if (cycleData.predictedOvulationDate &&
+                          new Date() > new Date(cycleData.predictedOvulationDate)) {
+                  phase = 'Lutealphase';
+                  phaseColor = '#c9b2ff'; // Lila für Lutealphase
+                }
+              }
+            } else {
+              nextPeriod.textContent = '--';
+            }
+
+            cyclePhase.textContent = phase;
+
+            // Aktualisiere Farbe des Phasenindikators
+            phaseIndicator.style.borderColor = phaseColor;
+
+            // Aktualisiere Zyklusrad
+            this.renderCycleWheel(cycleData, currentCycleDayNum);
+          }
+
+          // Rendert das Zyklusrad mit den aktuellen Daten
+          renderCycleWheel(cycleData, currentDay) {
+            const cycleRing = document.getElementById('cycleRing');
+            cycleRing.innerHTML = '';
+
+            if (!cycleData) return;
+
+            // Berechne erwartete Zykluslänge
+            const stats = this.model.calculateStatistics();
+            const expectedCycleLength = stats.avgCycleLength || 28;
+
+            // Erstelle Segmente für verschiedene Phasen
+            // 1. Menstruation (ca. 5 Tage)
+            const menstruationDays = 5;
+            const menstruationPercentage = menstruationDays / expectedCycleLength * 100;
+            this.addCycleSegment(cycleRing, 0, menstruationPercentage, '#f48fb1');
+
+            // 2. Follikelphase (bis zum fruchtbaren Fenster)
+            let fertileStartDay = 0;
+            if (cycleData.fertileWindow && cycleData.fertileWindow.start) {
+              const cycleStart = new Date(cycleData.currentCycleStartDate);
+              const fertileStart = new Date(cycleData.fertileWindow.start);
+
+              const diffTime = Math.abs(fertileStart - cycleStart);
+              fertileStartDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            } else {
+              fertileStartDay = Math.max(menstruationDays, expectedCycleLength - 19);
+            }
+
+            const follicularPercentage = (fertileStartDay - menstruationDays) / expectedCycleLength * 100;
+            this.addCycleSegment(cycleRing, menstruationPercentage, follicularPercentage, '#ffcdd2');
+
+            // 3. Fruchtbare Phase (ca. 6 Tage)
+            const fertileDays = 6;
+            const fertilePercentage = fertileDays / expectedCycleLength * 100;
+            this.addCycleSegment(cycleRing, menstruationPercentage + follicularPercentage, fertilePercentage, '#ffc076');
+
+            // 4. Lutealphase (Rest des Zyklus)
+            const lutealPercentage = 100 - (menstruationPercentage + follicularPercentage + fertilePercentage);
+            this.addCycleSegment(
+              cycleRing,
+              menstruationPercentage + follicularPercentage + fertilePercentage,
+              lutealPercentage,
+              '#c9b2ff'
+            );
+
+            // Markiere aktuellen Tag im Zyklusrad, wenn bekannt
+            if (currentDay) {
+              const currentDayPercentage = (currentDay - 1) / expectedCycleLength * 360;
+              const currentDayMarker = document.createElement('div');
+              currentDayMarker.style.position = 'absolute';
+              currentDayMarker.style.width = '15px';
+              currentDayMarker.style.height = '15px';
+              currentDayMarker.style.backgroundColor = '#333';
+              currentDayMarker.style.borderRadius = '50%';
+              currentDayMarker.style.transformOrigin = 'center 110px';
+              currentDayMarker.style.transform = `rotate(${currentDayPercentage}deg) translateY(-100px)`;
+
+              cycleRing.appendChild(currentDayMarker);
+            }
+          }
+
+          // Fügt ein Segment zum Zyklusrad hinzu
+          addCycleSegment(container, startPercentage, percentageWidth, color) {
+            const startAngle = startPercentage * 3.6; // Umrechnung in Grad (360 / 100)
+            const endAngle = (startPercentage + percentageWidth) * 3.6;
+
+            // Erstelle Segment für den ersten Halbkreis (0-180°)
+            if (startAngle < 180 && endAngle > 0) {
+              const segment1 = document.createElement('div');
+              segment1.className = 'cycle-segment';
+
+              const segmentInner1 = document.createElement('div');
+              segmentInner1.className = 'cycle-segment-inner';
+              segmentInner1.style.setProperty('--rotation', `${startAngle}deg`);
+              segmentInner1.style.setProperty('--segment-color', color);
+
+              segment1.appendChild(segmentInner1);
+              container.appendChild(segment1);
+            }
+
+            // Erstelle Segment für den zweiten Halbkreis (180-360°)
+            if (startAngle < 360 && endAngle > 180) {
+              const segment2 = document.createElement('div');
+              segment2.className = 'cycle-segment';
+              segment2.style.transform = 'rotate(180deg)';
+
+              const segmentInner2 = document.createElement('div');
+              segmentInner2.className = 'cycle-segment-inner';
+              segmentInner2.style.setProperty('--rotation', `${Math.max(0, startAngle - 180)}deg`);
+              segmentInner2.style.setProperty('--segment-color', color);
+
+              segment2.appendChild(segmentInner2);
+              container.appendChild(segment2);
+            }
+          }
+
+          // Rendert den Kalender
+          renderCalendar() {
+            const currentDate = this.model.selectedDate;
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Aktualisiere Monatsüberschrift
+            const monthNames = [
+              'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+              'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+            ];
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+
+            // Ermittle ersten Tag des Monats und Anzahl der Tage
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+
+            // Ermittle Wochentag des ersten Tags (0 = Sonntag, 1 = Montag, ..., 6 = Samstag)
+            // Anpassen für Montag als ersten Tag der Woche
+            let firstDayIndex = firstDay.getDay() - 1;
+            if (firstDayIndex < 0) firstDayIndex = 6; // Sonntag wird zu 6
+
+            // Erstelle Kalendergitter
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+
+            // Füge leere Zellen für Tage vor dem ersten Tag des Monats hinzu
+            for (let i = 0; i < firstDayIndex; i++) {
+              const emptyDay = document.createElement('div');
+              emptyDay.className = 'calendar-day empty';
+              calendarGrid.appendChild(emptyDay);
+            }
+
+            // Analyse des aktuellen Zyklus für die Anzeige fruchtbarer Tage
+            const cycleData = this.model.analyzeCurrentCycle();
+
+            // Füge Tage des Monats hinzu
+            for (let day = 1; day <= daysInMonth; day++) {
+              const dayDate = new Date(year, month, day);
+              const dateStr = this.model.formatDate(dayDate);
+
+              const dayElement = document.createElement('div');
+              dayElement.className = 'calendar-day';
+              dayElement.textContent = day;
+
+              // Finde Eintrag für diesen Tag
+              const entry = this.model.getEntryForDate(dayDate);
+
+              // Färbe Tag basierend auf Periodenfluss
+              if (entry.flow && entry.flow !== 'NONE') {
+                dayElement.classList.add('period');
+
+                // Füge Symbol für Flussstärke hinzu
+                const flowSymbol = document.createElement('div');
+                flowSymbol.className = 'day-symbol';
+                flowSymbol.textContent = this.model.getFlowSymbol(entry.flow);
+                dayElement.appendChild(flowSymbol);
+              }
+
+              // Markiere fruchtbare Tage
+              if (cycleData && cycleData.fertileWindow) {
+                const fertileStart = new Date(cycleData.fertileWindow.start);
+                const fertileEnd = new Date(cycleData.fertileWindow.end);
+
+                if (dayDate >= fertileStart && dayDate <= fertileEnd) {
+                  dayElement.classList.add('fertile');
+                }
+
+                // Markiere Eisprung
+                if (cycleData.predictedOvulationDate && dateStr === cycleData.predictedOvulationDate) {
+                  dayElement.classList.add('ovulation');
+
+                  const ovulationSymbol = document.createElement('div');
+                  ovulationSymbol.className = 'day-symbol';
+                  ovulationSymbol.textContent = '🌼';
+                  dayElement.appendChild(ovulationSymbol);
+                }
+              }
+
+              // Markiere Geschlechtsverkehr
+              if (entry.intercourse) {
+                const sexSymbol = document.createElement('div');
+                sexSymbol.className = 'day-symbol';
+                sexSymbol.textContent = '💜';
+                sexSymbol.style.color = '#ff66c4';
+                dayElement.appendChild(sexSymbol);
+              }
+
+              // Markiere Mittelschmerz
+              if (entry.mittleschmerz) {
+                const mittleschmerzSymbol = document.createElement('div');
+                mittleschmerzSymbol.className = 'day-symbol';
+                mittleschmerzSymbol.textContent = '⚡';
+                mittleschmerzSymbol.style.color = '#ff9100';
+                dayElement.appendChild(mittleschmerzSymbol);
+              }
+
+              // Markiere das aktuelle Datum
+              const today = new Date();
+              if (dayDate.getDate() === today.getDate() &&
+                  dayDate.getMonth() === today.getMonth() &&
+                  dayDate.getFullYear() === today.getFullYear()) {
+                dayElement.style.border = '2px solid #333';
+                dayElement.style.fontWeight = 'bold';
+              }
+
+              // Klick-Event hinzufügen
+              dayElement.addEventListener('click', () => {
+                this.model.selectedDate = dayDate;
+                this.switchTab('heute');
+                this.refreshUI();
+              });
+
+              calendarGrid.appendChild(dayElement);
+            }
+          }
+
+          // Rendert die Statistik-Seite
+          renderStatistics() {
+            const stats = this.model.calculateStatistics();
+
+            // Aktualisiere Statistik-Karten
+            document.getElementById('avgCycleLength').textContent =
+              stats.avgCycleLength ? `${stats.avgCycleLength} Tage` : '-- Tage';
+
+            document.getElementById('avgPeriodLength').textContent =
+              stats.avgPeriodLength ? `${stats.avgPeriodLength} Tage` : '-- Tage';
+
+            // Aktualisiere häufigste Symptome
+            const topSymptomsElement = document.getElementById('topSymptoms');
+            if (stats.topSymptoms && stats.topSymptoms.length > 0) {
+              const symptomsList = stats.topSymptoms.map(s => `${s.name} (${s.count}x)`).join(', ');
+              topSymptomsElement.textContent = symptomsList;
+            } else {
+              topSymptomsElement.textContent = 'Keine Daten';
+            }
+
+            // Aktualisiere letzte Zyklen
+            const recentCyclesElement = document.getElementById('recentCycles');
+            if (stats.recentCycles && stats.recentCycles.length > 0) {
+              let cyclesText = '';
+              stats.recentCycles.forEach((cycle, index) => {
+                const startDate = new Date(cycle.startDate);
+                const dateStr = this.formatDateLocale(startDate);
+
+                cyclesText += `Zyklus ${index + 1}: Start ${dateStr}`;
+                if (cycle.length) {
+                  cyclesText += `, ${cycle.length} Tage`;
+                }
+
+                if (index < stats.recentCycles.length - 1) {
+                  cyclesText += '<br>';
+                }
+              });
+
+              recentCyclesElement.innerHTML = cyclesText;
+            } else {
+              recentCyclesElement.textContent = 'Keine Daten';
+            }
+
+            // Aktualisiere Eintragsübersicht
+            this.renderEntriesTable();
+          }
+
+          // Rendert die Tabelle mit Einträgen
+          renderEntriesTable() {
+            const table = document.getElementById('entriesTable').querySelector('tbody');
+            table.innerHTML = '';
+
+            // Sortiere Einträge nach Datum (neueste zuerst)
+            const sortedEntries = [...this.model.currentUser.entries].sort(
+              (a, b) => new Date(b.date) - new Date(a.date)
+            );
+
+            // Zeige maximal 10 Einträge pro Seite
+            const entriesPerPage = 10;
+            const totalPages = Math.ceil(sortedEntries.length / entriesPerPage);
+
+            // Aktuelle Seite (Default: 1)
+            const currentPage = 1;
+
+            // Berechne Einträge für aktuelle Seite
+            const startIndex = (currentPage - 1) * entriesPerPage;
+            const endIndex = Math.min(startIndex + entriesPerPage, sortedEntries.length);
+            const pageEntries = sortedEntries.slice(startIndex, endIndex);
+
+            // Füge Einträge zur Tabelle hinzu
+            pageEntries.forEach(entry => {
+              const row = document.createElement('tr');
+
+              // Datum-Zelle
+              const dateCell = document.createElement('td');
+              const entryDate = new Date(entry.date);
+              dateCell.textContent = this.formatDateLocale(entryDate);
+              row.appendChild(dateCell);
+
+              // Perioden-Zelle
+              const periodCell = document.createElement('td');
+              periodCell.textContent = entry.flow ? this.model.getFlowLabel(entry.flow) : '-';
+              row.appendChild(periodCell);
+
+              // Temperatur-Zelle
+              const tempCell = document.createElement('td');
+              tempCell.textContent = entry.temperature ? `${entry.temperature} °C` : '-';
+              row.appendChild(tempCell);
+
+              // Symptome-Zelle
+              const symptomsCell = document.createElement('td');
+              const symptoms = [];
+
+              if (entry.cervicalMucus) {
+                symptoms.push(`Schleim: ${this.model.getMucusLabel(entry.cervicalMucus)}`);
+              }
+
+              if (entry.mittleschmerz) {
+                symptoms.push('Mittelschmerz');
+              }
+
+              if (entry.breastFeeling && entry.breastFeeling !== 'NONE') {
+                symptoms.push(`Brust: ${this.model.getBreastFeelingLabel(entry.breastFeeling)}`);
+              }
+
+              if (entry.headacheIntensity > 0) {
+                symptoms.push(`Kopfschmerzen: ${entry.headacheIntensity}/10`);
+              }
+
+              symptomsCell.textContent = symptoms.length > 0 ? symptoms.join(', ') : '-';
+              row.appendChild(symptomsCell);
+
+              // Benutzerdefinierte Parameter-Zelle
+              const customCell = document.createElement('td');
+              const customParams = [];
+
+              if (entry.weight) {
+                customParams.push(`Gewicht: ${entry.weight} kg`);
+              }
+
+              if (entry.intercourse) {
+                customParams.push('GV: Ja');
+              }
+
+              if (entry.customParameters) {
+                Object.entries(entry.customParameters).forEach(([paramId, value]) => {
+                  const param = this.model.currentUser.settings.customParameters.find(p => p.id === paramId);
+
+                  if (param) {
+                    customParams.push(`${param.name}: ${value}`);
+                  }
+                });
+              }
+
+              customCell.textContent = customParams.length > 0 ? customParams.join(', ') : '-';
+              row.appendChild(customCell);
+
+              // Klick-Event hinzufügen, um den Eintrag zu bearbeiten
+              row.addEventListener('click', () => {
+                this.model.selectedDate = new Date(entry.date);
+                this.switchTab('heute');
+                this.refreshUI();
+              });
+              row.style.cursor = 'pointer';
+
+              table.appendChild(row);
+            });
+
+            // Aktualisiere Paginierung
+            this.updatePagination(totalPages, currentPage);
+          }
+
+          // Aktualisiert die Paginierung
+          updatePagination(totalPages, currentPage) {
+            const paginationElement = document.getElementById('entriesPagination');
+            paginationElement.innerHTML = '';
+
+            if (totalPages <= 1) {
+              return; // Keine Paginierung notwendig
+            }
+
+            // Zurück-Button
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '«';
+            prevButton.className = currentPage === 1 ? 'disabled' : '';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+              if (currentPage > 1) {
+                this.changePage(currentPage - 1);
+              }
+            });
+            paginationElement.appendChild(prevButton);
+
+            // Seitenzahlen
+            for (let i = 1; i <= totalPages; i++) {
+              // Zeige nur bestimmte Seiten an, um Platz zu sparen
+              if (
+                i === 1 ||
+                i === totalPages ||
+                (i >= currentPage - 1 && i <= currentPage + 1)
+              ) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+
+                if (i === currentPage) {
+                  pageButton.classList.add('active');
+                }
+
+                pageButton.addEventListener('click', () => {
+                  this.changePage(i);
+                });
+
+                paginationElement.appendChild(pageButton);
+              } else if (
+                (i === 2 && currentPage > 3) ||
+                (i === totalPages - 1 && currentPage < totalPages - 2)
+              ) {
+                // Füge Auslassungspunkte hinzu
+                const ellipsis = document.createElement('span');
+                ellipsis.textContent = '...';
+                ellipsis.style.padding = '0 10px';
+                paginationElement.appendChild(ellipsis);
+              }
+            }
+
+            // Weiter-Button
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '»';
+            nextButton.className = currentPage === totalPages ? 'disabled' : '';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+              if (currentPage < totalPages) {
+                this.changePage(currentPage + 1);
+              }
+            });
+            paginationElement.appendChild(nextButton);
+          }
+
+          // Wechselt zur angegebenen Seite
+          changePage(pageNumber) {
+            // Implementierung für Seitenwechsel
+            // Diese Funktion kann später erweitert werden
+          }
+
+          // Aktualisiert die gesamte Benutzeroberfläche
+          refreshUI() {
+            this.updateQuestDate();
+            this.updateQuestItemIndicators();
+            this.updateCycleWheel();
+
+            const activeTab = document.querySelector('.tab.active').dataset.tab;
+            if (activeTab === 'kalender') {
+              this.renderCalendar();
+            } else if (activeTab === 'statistik') {
+              this.renderStatistics();
+            } else if (activeTab === 'einstellungen') {
+              this.refreshBackupHistory();
+              this.renderCustomParameters();
+            }
+          }
+        }
+
+        // Initialisieren der App
+        document.addEventListener('DOMContentLoaded', () => {
+          // Starte App mit Model und UI
+          const model = new CycleTrackerModel();
+          const ui = new CycleTrackerUI(model);
+        });
+    </script>
+</body>
+</html>
