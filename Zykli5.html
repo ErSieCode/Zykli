@@ -3360,7 +3360,7 @@
               );
 
               this.closeDialog('periodDialog');
-              this.showConfetti();
+
               this.refreshUI();
             });
 
@@ -3420,8 +3420,10 @@
             // Geschlechtsverkehr speichern
             document.getElementById('intercourseYesBtn').addEventListener('click', () => {
               this.model.saveEntryForDate(
+                this.showConfetti(),
                 this.model.selectedDate,
                 { intercourse: true }
+
               );
 
               this.closeDialog('intercourseDialog');
